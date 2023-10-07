@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.PersonMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.PersonDO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+        <result column="gender" jdbcType="INTEGER" property="gender"/>
+        <result column="admission_date" jdbcType="TIMESTAMP" property="admissionDate"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+    </resultMap>
+
+    <resultMap id="PersonBO" type="com.unisinsight.business.bo.PersonBO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_index_path" jdbcType="VARCHAR" property="orgIndexPath"/>
+    </resultMap>
+
+    <resultMap id="PersonOfOrgBO" type="com.unisinsight.business.bo.PersonOfClassBO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+    </resultMap>
+
+    <resultMap id="PersonOfSchoolBO" type="com.unisinsight.business.bo.PersonOfSchoolBO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="org_index_of_school" jdbcType="VARCHAR" property="orgIndexOfSchool"/>
+    </resultMap>
+
+    <resultMap id="PersonDTO" type="com.unisinsight.business.dto.PersonDTO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+        <result column="gender" jdbcType="INTEGER" property="gender"/>
+        <result column="admission_date" jdbcType="TIMESTAMP" property="admissionDate"/>
+        <result column="org_index_path_name" jdbcType="VARCHAR" property="orgIndexPathName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+    </resultMap>
+
+    <select id="sync">
+        CREATE extension IF NOT EXISTS dblink;
+        <!-- 同步 -->
+        INSERT INTO persons (person_no, person_name, person_url, gender, admission_date, org_index, org_name,
+        registered, at_school)
+        SELECT *
+        FROM dblink('hostaddr=${host} port=${port} dbname=app_object_manage user=${username} password=${password}',
+        'SELECT user_code,user_name,user_image,gender,entrance_time,org_index,class_name,
+        CASE is_record WHEN 0 THEN TRUE ELSE FALSE END AS registered,
+        CASE is_school WHEN 0 THEN TRUE ELSE FALSE END AS at_school
+        FROM public.tb_person WHERE org_index is not null and is_deleted = 0')
+        AS T (person_no VARCHAR,
+        person_name VARCHAR,
+        person_url VARCHAR,
+        gender INT2,
+        admission_date DATE,
+        org_index VARCHAR,
+        org_name VARCHAR,
+        registered BOOL,
+        at_school BOOL)
+        ON CONFLICT ( person_no ) DO UPDATE
+        SET person_name= excluded.person_name,
+        person_url=excluded.person_url,
+        gender=excluded.gender,
+        admission_date=excluded.admission_date,
+        org_index=excluded.org_index,
+        org_name=excluded.org_name,
+        registered=excluded.registered,
+        at_school=excluded.at_school ;
+        <!--  更新人员的班级名称   -->
+        UPDATE persons
+        SET org_name = (SELECT org_name FROM organizations WHERE org_index = persons.org_index)
+    </select>
+
+    <select id="syncImage">
+        CREATE extension IF NOT EXISTS dblink;
+        <!-- 同步 -->
+        update persons set person_url = t.user_image from
+        (SELECT *
+        FROM dblink('hostaddr=${host} port=${port} dbname=app_object_manage user=${username} password=${password}',
+        'select user_image,user_code from public.tb_person where user_image is not null')
+        AS T (user_image VARCHAR,
+        user_code VARCHAR)) t where person_no = t.user_code
+    </select>
+    <!--    <select id="syncNew">-->
+    <!--        CREATE extension IF NOT EXISTS dblink;-->
+    <!--        &lt;!&ndash; 同步 &ndash;&gt;-->
+    <!--        INSERT INTO persons (person_no, person_name, person_url, gender, admission_date, org_index, org_name,-->
+    <!--        registered, at_school)-->
+    <!--        SELECT *-->
+    <!--        FROM dblink('hostaddr=${host} port=${port} dbname=ziguang user=${username} password=${password}',-->
+    <!--        'SELECT user_code,user_name,user_image,gender,entrance_time,org_index,class_name,-->
+    <!--        CASE is_record WHEN 0 THEN TRUE ELSE FALSE END AS registered,-->
+    <!--        CASE is_school WHEN 0 THEN TRUE ELSE FALSE END AS at_school-->
+    <!--        FROM public.tb_person WHERE org_index is not null and is_deleted = 0')-->
+    <!--        AS T (person_no VARCHAR,-->
+    <!--        person_name VARCHAR,-->
+    <!--        person_url VARCHAR,-->
+    <!--        gender INT2,-->
+    <!--        admission_date DATE,-->
+    <!--        org_index VARCHAR,-->
+    <!--        org_name VARCHAR,-->
+    <!--        registered BOOL,-->
+    <!--        at_school BOOL)-->
+    <!--        ON CONFLICT ( person_no ) DO UPDATE-->
+    <!--        SET person_name= excluded.person_name,-->
+    <!--        person_url=excluded.person_url,j-->
+    <!--        gender=excluded.gender,-->
+    <!--        admission_date=excluded.admission_date,-->
+    <!--        org_index=excluded.org_index,-->
+    <!--        org_name=excluded.org_name,-->
+    <!--        registered=excluded.registered,-->
+    <!--        at_school=excluded.at_school ;-->
+    <!--        &lt;!&ndash;  更新人员的班级名称   &ndash;&gt;-->
+    <!--        UPDATE persons-->
+    <!--        SET org_name = (SELECT org_name FROM organizations WHERE org_index = persons.org_index)-->
+    <!--    </select>-->
+
+
+    <insert id="batchSaveOrUpdate">
+        <foreach collection="persons" item="item" separator=";" close=";">
+            INSERT INTO persons
+            (person_no, person_name, person_url, admission_date, org_index, registered, at_school)
+            VALUES (#{item.personNo},
+            #{item.personName},
+            #{item.personUrl},
+            #{item.admissionDate},
+            #{item.orgIndex},
+            #{item.registered},
+            #{item.atSchool})
+            ON CONFLICT (person_no) DO UPDATE SET person_name = #{item.personName},
+            <if test="item.personUrl != null and item.personUrl!=''">
+                person_url = #{item.personUrl},
+            </if>
+            admission_date = #{item.admissionDate},
+            org_index = #{item.orgIndex}
+        </foreach>
+        UPDATE persons
+        SET org_name = (SELECT org_name FROM organizations WHERE org_index = persons.org_index)
+        WHERE person_no IN
+        <foreach collection="persons" item="item" open="(" separator="," close=")">
+            #{item.personNo}
+        </foreach>
+    </insert>
+
+    <insert id="batchSaveOrUpdateNew">
+        <foreach collection="persons" item="item" separator=";" close=";">
+            INSERT INTO persons
+            (person_no, person_name, person_url, admission_date, org_index, registered, at_school)
+            VALUES (#{item.personNo},
+            #{item.personName},
+            #{item.personUrl},
+            #{item.admissionDate},
+            #{item.orgIndex},
+            #{item.registered},
+            #{item.atSchool})
+            ON CONFLICT (person_no) DO UPDATE SET person_name = #{item.personName},
+            <if test="item.personUrl != null and item.personUrl!=''">
+                person_url = #{item.personUrl},
+            </if>
+            admission_date = #{item.admissionDate},
+            org_index = #{item.orgIndex},
+            registered = #{item.registered},
+            at_school = #{item.atSchool}
+        </foreach>
+        UPDATE persons
+        SET org_name = (SELECT org_name FROM organizations WHERE org_index = persons.org_index)
+        WHERE person_no IN
+        <foreach collection="persons" item="item" open="(" separator="," close=")">
+            #{item.personNo}
+        </foreach>
+    </insert>
+
+
+    <select id="findByPersonNo" resultMap="PersonDTO">
+        SELECT p.person_no,
+               p.person_name,
+               p.person_url,
+               p.gender,
+               p.admission_date,
+               p.org_index,
+               org.org_name,
+               CONCAT(org.org_name, '&lt;', org.index_path_name) AS org_index_path_name
+        FROM persons p
+                 LEFT JOIN organizations org ON org.org_index = p.org_index
+        WHERE person_no = #{personNo} LIMIT 1
+    </select>
+
+    <select id="findPersonsOfSchool" resultMap="PersonOfSchoolBO">
+        SELECT person_no, o.org_parent_index AS org_index_of_school
+        FROM persons p
+        LEFT JOIN organizations o ON o.org_index = p.org_index
+        <where>
+            <if test="personNos != null and personNos.size > 0">
+                AND p.person_no IN
+                <foreach collection="personNos" item="personNo" open="(" separator="," close=")">
+                    #{personNo}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="findPersonsOfClass" resultMap="PersonOfOrgBO">
+        SELECT p.person_no, p.person_name, org.org_index, org.org_name
+        FROM persons p
+        LEFT JOIN organizations org ON org.org_index = p.org_index
+        WHERE person_no IN
+        <foreach collection="personNos" item="personNo" open="(" separator="," close=")">
+            #{personNo}
+        </foreach>
+    </select>
+
+    <select id="query" resultMap="PersonBO">
+        SELECT *
+        FROM persons
+        <where>
+            <if test="personNo != null">
+                AND person_no &gt;= #{personNo}
+            </if>
+        </where>
+        ORDER BY person_no
+    </select>
+
+    <select id="findPersonBO" resultMap="PersonBO">
+        SELECT p.person_no,
+               p.person_name,
+               p.org_index,
+               CONCAT(org.index_path, p.org_index) AS org_index_path
+        FROM persons p
+                 LEFT JOIN organizations org ON org.org_index = p.org_index
+        WHERE p.person_no = #{personNo}
+    </select>
+
+    <select id="findByClasses" resultType="com.unisinsight.business.dto.response.StudentDTO">
+        SELECT person_no, person_name, person_url
+        FROM persons
+        WHERE org_index IN
+        <foreach collection="classOrgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND registered = true
+        <if test="searchKey != null and searchKey != ''">
+            AND (person_name LIKE CONCAT('%', #{searchKey}, '%')
+            OR
+            person_no LIKE CONCAT('%', #{searchKey}, '%'))
+        </if>
+    </select>
+
+    <select id="selectCountGroupByOrgIndex" resultType="com.unisinsight.business.dto.PersonCountDTO">
+        SELECT org_index as orgIndex,
+        count(*) as personNum
+        FROM persons
+        <where>
+            1 = 1
+            <if test="registered != null">
+                and registered = #{registered}
+            </if>
+            <if test="atSchool != null">
+                and at_school = #{atSchool}
+            </if>
+            <if test="orgIndexs != null and orgIndexs.size > 0">
+                and org_index IN
+                <foreach collection="orgIndexs" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY org_index
+    </select>
+</mapper>

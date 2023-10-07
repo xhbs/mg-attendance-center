@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.SpotCheckTaskMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.SpotCheckTaskDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="state" jdbcType="INTEGER" property="state"/>
+        <result column="start_date" jdbcType="DATE" property="startDate"/>
+        <result column="end_date" jdbcType="DATE" property="endDate"/>
+        <result column="day_count" jdbcType="INTEGER" property="dayCount"/>
+        <result column="school_year" jdbcType="VARCHAR" property="schoolYear"/>
+        <result column="semester" jdbcType="VARCHAR" property="semester"/>
+        <result column="month" jdbcType="VARCHAR" property="month"/>
+        <result column="minimum_absence_rate" jdbcType="INTEGER" property="minimumAbsenceRate"/>
+        <result column="creator_code" jdbcType="VARCHAR" property="creatorCode"/>
+        <result column="creator_name" jdbcType="VARCHAR" property="creatorName"/>
+        <result column="creator_role_name" jdbcType="VARCHAR" property="creatorRoleName"/>
+        <result column="creator_org_name" jdbcType="VARCHAR" property="creatorOrgName"/>
+        <result column="created_at" jdbcType="TIMESTAMP" property="createdAt"/>
+        <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="SpotCheckTaskDTO" type="com.unisinsight.business.dto.response.SpotCheckTaskDTO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="state" jdbcType="INTEGER" property="state"/>
+        <result column="start_date" jdbcType="VARCHAR" property="startDate"/>
+        <result column="end_date" jdbcType="VARCHAR" property="endDate"/>
+        <result column="call_the_roll" jdbcType="VARCHAR" property="callTheRoll"/>
+        <result column="day_count" jdbcType="INTEGER" property="dayCount"/>
+        <result column="target_org_names" jdbcType="VARCHAR" property="targetOrgNames"/>
+        <result column="school_year" jdbcType="VARCHAR" property="schoolYear"/>
+        <result column="semester" jdbcType="VARCHAR" property="semester"/>
+        <result column="month" jdbcType="VARCHAR" property="month"/>
+        <result column="minimum_absence_rate" jdbcType="INTEGER" property="minimumAbsenceRate"/>
+        <result column="creator_code" jdbcType="VARCHAR" property="creatorCode"/>
+        <result column="creator_name" jdbcType="VARCHAR" property="creatorName"/>
+        <result column="creator_role_name" jdbcType="VARCHAR" property="creatorRoleName"/>
+        <result column="creator_org_name" jdbcType="VARCHAR" property="creatorOrgName"/>
+        <result column="created_at" jdbcType="VARCHAR" property="createdAt"/>
+        <result column="updated_at" jdbcType="VARCHAR" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="SpotCheckTaskDetailDTO" type="com.unisinsight.business.dto.response.SpotCheckTaskDTO"
+               extends="SpotCheckTaskDTO">
+        <collection column="taskId=id" ofType="java.lang.String" property="targetOrgIndexes"
+                    select="findTargetOrgIndexes">
+        </collection>
+    </resultMap>
+
+    <resultMap id="SpotCheckAttendDetailDTO" type="com.unisinsight.business.dto.response.SpotCheckAttendDetailDTO">
+        <result column="task_id" jdbcType="INTEGER" property="taskId"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+        <result column="class_name" jdbcType="VARCHAR" property="className"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="result" jdbcType="INTEGER" property="result"/>
+        <result column="can_feel_attend" jdbcType="BOOLEAN" property="canFeelAttend"/>
+    </resultMap>
+
+    <resultMap id="SpotCheckAttendListDTO" type="com.unisinsight.business.dto.response.SpotCheckAttendListDTO">
+        <result column="task_id" jdbcType="INTEGER" property="taskId"/>
+        <result column="task_name" jdbcType="VARCHAR" property="taskName"/>
+        <result column="start_date" jdbcType="VARCHAR" property="startDate"/>
+        <result column="end_date" jdbcType="VARCHAR" property="endDate"/>
+        <result column="day_count" jdbcType="INTEGER" property="dayCount"/>
+        <result column="spot_checked" jdbcType="INTEGER" property="spotChecked"/>
+        <result column="can_feel_attend" jdbcType="BOOLEAN" property="canFeelAttend"/>
+        <result column="spot_checked_date_str" jdbcType="VARCHAR" property="spotCheckedDateStr"/>
+    </resultMap>
+
+    <resultMap id="SpotCheckNumDTO" type="com.unisinsight.business.dto.response.SpotCheckNumDTO">
+        <result column="num_of_running" jdbcType="INTEGER" property="inProgressNum"/>
+        <result column="num_of_not_start" jdbcType="INTEGER" property="notPerformedNum"/>
+    </resultMap>
+
+    <select id="findByDate" resultMap="BaseResultMap">
+        SELECT t.*
+        FROM spot_check_tasks t
+                 INNER JOIN task_attendance_dates d ON d.task_id = t.id
+        WHERE d.attendance_date = #{date}
+    </select>
+
+    <select id="findCalltheRollByDate" resultMap="BaseResultMap">
+        SELECT t.*
+        FROM spot_check_tasks t
+                 INNER JOIN task_attendance_dates d ON d.task_id = t.id
+        WHERE d.attendance_date = #{date}
+          and t.call_the_roll = 1
+          and t.state = 3
+    </select>
+
+    <select id="findById" resultMap="SpotCheckTaskDetailDTO">
+        SELECT t.*, array_to_string(ARRAY_AGG(o.org_name), '、') AS target_org_names
+        FROM spot_check_tasks t
+                 INNER JOIN task_org_relations r ON r.task_id = t.id
+                 INNER JOIN organizations o ON o.org_index = r.org_index
+        WHERE t.id = #{id}
+        GROUP BY t.id
+    </select>
+
+    <select id="findTargetOrgIndexes" resultType="java.lang.String">
+        SELECT org_index
+        FROM task_org_relations
+        WHERE task_id = #{taskId}
+    </select>
+
+    <select id="list" resultMap="SpotCheckTaskDTO">
+        SELECT t.*, ARRAY_TO_STRING(ARRAY_AGG(o.org_name), '、') AS target_org_names
+        FROM spot_check_tasks t
+        INNER JOIN task_org_relations r ON r.task_id = t.id
+        INNER JOIN organizations o ON o.org_index = r.org_index
+        WHERE 1 = 1
+        <choose>
+            <when test="adminLevel == 4">
+                AND r.org_index IN
+                <foreach collection="userOrgIndexes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                <if test="creatorOrgIndexPath != null and creatorOrgIndexPath != ''">
+                    AND t.creator_org_index_path = #{creatorOrgIndexPath}
+                </if>
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="creatorOrgIndexPath != null and creatorOrgIndexPath != ''">
+                        <choose>
+                            <when test="creatorOrgIndexPath == userOrgIndexPath">
+                                AND t.creator_org_index_path LIKE CONCAT(#{userOrgIndexPath},'%')
+                            </when>
+                            <otherwise>
+                                AND r.org_index IN
+                                <foreach collection="userOrgIndexes" item="item" open="(" separator="," close=")">
+                                    #{item}
+                                </foreach>
+                                AND t.creator_org_index_path LIKE CONCAT(#{creatorOrgIndexPath},'%')
+                            </otherwise>
+                        </choose>
+                    </when>
+
+                    <otherwise>
+                        AND (r.org_index IN
+                        <foreach collection="userOrgIndexes" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                        OR t.creator_org_index_path LIKE CONCAT(#{userOrgIndexPath},'%'))
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+
+        <if test="state != null">
+            AND t.state = #{state}
+        </if>
+
+        <if test="endDate != null">
+            AND t.start_date &lt;= #{endDate}
+        </if>
+
+        <if test="startDate != null">
+            AND t.end_date &gt;= #{startDate}
+        </if>
+
+        <if test="search != null and search != ''">
+            AND (
+            t.name LIKE CONCAT('%', #{search}, '%')
+            OR
+            o.org_name LIKE CONCAT('%', #{search}, '%')
+            OR
+            t.creator_name LIKE CONCAT('%', #{search}, '%')
+            )
+        </if>
+
+        GROUP BY t.id
+
+        <choose>
+            <when test="orderField != null and orderField != ''">
+                ORDER BY ${orderField}
+                <if test="orderRule != null and orderRule != ''">
+                    ${orderRule}
+                </if>
+                ,t.id DESC
+            </when>
+            <otherwise>
+                ORDER BY t.id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="updateState">
+        UPDATE spot_check_tasks
+        SET state =
+                CASE
+                    WHEN CURRENT_DATE &lt; start_date :: DATE THEN 1
+                            WHEN CURRENT_DATE &gt; end_date :: DATE THEN 3
+                            WHEN CURRENT_DATE > (SELECT MAX(attendance_date)
+                                                 FROM task_attendance_dates
+                                                 WHERE task_id = spot_check_tasks.id) THEN 3
+                            ELSE 2
+        END
+        WHERE state != 3;
+    </update>
+
+    <select id="countTasksOfClasses" resultMap="SpotCheckNumDTO">
+        SELECT COALESCE(SUM(CASE WHEN STATE = 2 THEN 1 ELSE 0 END), 0) AS num_of_running,
+        COALESCE(SUM(CASE WHEN STATE = 1 THEN 1 ELSE 0 END), 0) AS num_of_not_start
+        FROM spot_check_tasks
+        WHERE id IN (
+        SELECT DISTINCT t.id
+        FROM spot_check_tasks T
+        INNER JOIN task_person_relations tpr ON tpr.task_id = t.id
+        INNER JOIN persons p ON p.person_no = tpr.person_no
+        WHERE P.org_index IN
+        <foreach collection="classOrgIndexes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <select id="findTasksOfClasses" resultType="com.unisinsight.business.dto.response.SpotCheckAttendListDTO">
+        SELECT t.id AS task_id,
+        t.name AS task_name,
+        t.start_date,
+        t.end_date,
+        t.day_count,
+        ARRAY_TO_STRING(ARRAY_AGG(d.attendance_date), '、') AS spot_checked_date_str,
+        COUNT(d.attendance_date) AS spot_checked,
+        CASE
+        WHEN (SELECT count(1)
+        FROM task_attendance_dates
+        WHERE task_id = t.id
+        AND attendance_date = #{today}) > 0 THEN TRUE
+        ELSE FALSE END AS can_feel_attend
+        FROM spot_check_tasks T
+        LEFT JOIN task_attendance_dates d ON d.task_id = t.ID AND d.attendance_date &lt; #{today}
+        WHERE t.id IN (
+        SELECT t.id
+        FROM spot_check_tasks t
+        INNER JOIN task_person_relations tpr ON tpr.task_id = t.id
+        INNER JOIN persons p ON p.person_no = tpr.person_no
+        WHERE p.org_index IN
+        <foreach collection="classOrgIndexes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+        AND t.state = #{state}
+
+        <if test="searchKey != null and searchKey != ''">
+            AND t.name LIKE CONCAT('%', #{searchKey}, '%')
+        </if>
+
+        <if test="endDate != null">
+            AND t.start_date &lt;= #{endDate}
+        </if>
+
+        <if test="startDate != null">
+            AND t.end_date &gt;= #{startDate}
+        </if>
+
+        GROUP BY t.id )
+        GROUP BY t.id
+        ORDER BY can_feel_attend DESC
+    </select>
+
+    <select id="findHaveTaskStudents" resultMap="SpotCheckAttendDetailDTO">
+        SELECT r.task_id,
+        p.person_no,
+        p.person_name,
+        p.person_url,
+        p.org_name AS class_name,
+        tr.result,
+        d.attendance_date,
+        CASE WHEN tr.ID IS NULL THEN 2 ELSE 1 END AS status,
+        CASE WHEN far.ID IS NULL THEN TRUE ELSE FALSE END AS can_feel_attend
+        FROM task_person_relations r
+        INNER JOIN persons p ON p.person_no = r.person_no
+        LEFT JOIN task_attendance_dates d ON d.task_id = r.task_id
+        <choose>
+            <when test="status == 1">
+                INNER JOIN task_results tr
+                ON tr.person_no = r.person_no AND tr.attendance_date = #{date} AND tr.task_id = #{taskId}
+            </when>
+            <otherwise>
+                LEFT JOIN task_results tr
+                ON tr.person_no = r.person_no AND tr.attendance_date = #{date} AND tr.task_id = #{taskId}
+            </otherwise>
+        </choose>
+        LEFT JOIN feel_attendance_records far ON far.result_id = tr.id
+        LEFT JOIN feel_task_relations ftr ON ftr.feel_id = far.id
+        WHERE r.task_id = #{taskId}
+        AND d.attendance_date = #{date}
+        AND p.org_index IN
+        <foreach collection="classOrgIndexes" open="(" close=")" item="orgIndex" separator=",">
+            #{orgIndex}
+        </foreach>
+        <if test="result != null">
+            AND tr.result = #{result}
+        </if>
+        <if test="status == 2">
+            AND tr.result is null
+        </if>
+        <if test="searchKey != null and searchKey != ''">
+            AND (p.person_name LIKE CONCAT('%', #{searchKey}, '%')
+            OR
+            p.person_no LIKE CONCAT('%', #{searchKey}, '%'))
+        </if>
+    </select>
+</mapper>

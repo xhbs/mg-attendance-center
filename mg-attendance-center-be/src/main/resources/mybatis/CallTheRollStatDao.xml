@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.CallTheRollStatDao">
+
+    <resultMap type="com.unisinsight.business.model.CallTheRollStat" id="CallTheRollStatMap">
+        <result property="month" column="month" jdbcType="VARCHAR"/>
+        <result property="schoolOrgIndex" column="school_org_index" jdbcType="VARCHAR"/>
+        <result property="schoolOrgName" column="school_org_name" jdbcType="VARCHAR"/>
+        <result property="studentNum" column="student_num" jdbcType="INTEGER"/>
+        <result property="absenceNum" column="absence_num" jdbcType="INTEGER"/>
+        <result property="normalNum" column="normal_num" jdbcType="INTEGER"/>
+        <result property="leaveNum" column="leave_num" jdbcType="INTEGER"/>
+        <result property="practiceNum" column="practice_num" jdbcType="INTEGER"/>
+        <result property="taskCreateBy" column="task_create_by" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insertBatch">
+        <foreach collection="list" item="item" separator=";">
+            insert into call_the_roll_stat(
+            month,
+            school_org_index,
+            school_org_name,
+            student_num,
+            absence_num,
+            normal_num,
+            leave_num,
+            practice_num,
+            task_create_by,
+            create_time
+            )
+            values
+            (
+            #{item.month},
+            #{item.schoolOrgIndex},
+            #{item.schoolOrgName},
+            #{item.studentNum},
+            #{item.absenceNum},
+            #{item.normalNum},
+            #{item.leaveNum},
+            #{item.practiceNum},
+            #{item.taskCreateBy},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+</mapper>
+

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.AdsStudentBasicInformationMapper">
+    <select id="selectXszpPage" resultType="com.unisinsight.business.model.AdsStudentBasicInformation">
+        select *
+        from ads_student_basic_information
+        where zt = 'A'
+          and zxszt = '00'
+          and xszp is not null
+          and xszp != '' and image is null
+        order by sfzjh
+            limit #{offset}
+        offset #{limit}
+    </select>
+
+    <select id="selectPageByUpdateTime" resultType="com.unisinsight.business.model.AdsStudentBasicInformation">
+        select *
+        from ads_student_basic_information
+        where updatetime > #{updateTime} limit #{startNum}
+        offset #{pageSize}
+    </select>
+
+    <update id="updateImage">
+        update ads_student_basic_information
+        set image = #{image}
+        where person_no = #{personNo}
+    </update>
+
+    <select id="sync">
+        CREATE extension IF NOT EXISTS dblink;
+        <!-- 同步 -->
+        update ads_student_basic_information set image = t.user_image from
+        (SELECT *
+        FROM dblink('hostaddr=${host} port=${port} dbname=app_object_manage user=${username} password=${password}',
+        'select user_image,user_code from public.tb_person where user_image is not null')
+        AS T (user_image VARCHAR,
+        user_code VARCHAR)) t where sfzjh = t.user_code
+    </select>
+
+
+    <insert id="insertBatch">
+        <foreach collection="list" item="item">
+            INSERT INTO "public"."ads_student_basic_information"("id", "xh", "xjh", "xm", "xb", "csrq", "xszp", "nj",
+            "sfzjh", "xz", "xxjgmc", "xxzgbmm", "xxjgdzdm", "zs", "qx",
+            "bjmc", "bh", "zxszt", "zxsztmc", "zymc", "updatetime",
+            "zt", "image","org_index")
+            VALUES (#{item.id}, #{item.xh}, #{item.xjh}, #{item.xm}, #{item.xb}, #{item.csrq}, #{item.xszp}, #{item.nj},
+            #{item.sfzjh}, #{item.xz},
+            #{item.xxjgmc}, #{item.xxzgbmm}, #{item.xxjgdzdm}, #{item.zs}, #{item.qx}, #{item.bjmc}, #{item.bh},
+            #{item.zxszt}, #{item.zxsztmc}, #{item.zymc},
+            #{item.updatetime}, #{item.zt}, #{item.image},#{item.orgIndex})
+            ON CONFLICT ( sfzjh,xh ) DO
+            UPDATE
+            SET xm = excluded.xm,
+            xb = excluded.xb,
+            csrq = excluded.csrq,
+            nj = excluded.nj,
+            xz = excluded.xz,
+            xxjgmc = excluded.xxjgmc,
+            xxzgbmm = excluded.xxzgbmm,
+            xxjgdzdm = excluded.xxjgdzdm,
+            zs = excluded.qx,
+            bjmc = excluded.bjmc,
+            bh = excluded.bh,
+            zxszt = excluded.zxszt,
+            zxsztmc = excluded.zxsztmc,
+            zymc = excluded.zymc,
+            updatetime = excluded.updatetime,
+            zt = excluded.zt,
+            xszp = excluded.xszp,
+            org_index = excluded.org_index
+            <if test="item.image != null and item.image !=''">
+                ,image = excluded.image
+            </if>
+            ;
+        </foreach>
+    </insert>
+</mapper>

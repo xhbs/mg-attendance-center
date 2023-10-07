@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.DailyAttendanceResultMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.DailyAttendanceResultDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="result" jdbcType="SMALLINT" property="result"/>
+        <result column="attendance_date" jdbcType="TIMESTAMP" property="attendanceDate"/>
+        <result column="captured_at" jdbcType="TIMESTAMP" property="capturedAt"/>
+        <result column="original_record_id" jdbcType="BIGINT" property="originalRecordId"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_index_path" jdbcType="VARCHAR" property="orgIndexPath"/>
+        <result column="created_at" jdbcType="TIMESTAMP" property="createdAt"/>
+        <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="PersonBO" type="com.unisinsight.business.bo.PersonBO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_index_path" jdbcType="VARCHAR" property="orgIndexPath"/>
+    </resultMap>
+
+    <resultMap id="HistoryItem" type="com.unisinsight.business.bo.HistoryItem">
+        <result column="date" jdbcType="VARCHAR" property="date"/>
+        <result column="result" jdbcType="INTEGER" property="result"/>
+    </resultMap>
+
+    <insert id="createPartitionTable">
+        CREATE TABLE IF NOT EXISTS "daily_attendance_results${suffix}" PARTITION OF daily_attendance_results FOR VALUES
+                FROM ('${startDate}') TO ('${endDate}');
+
+        <!-- 创建索引 -->
+        CREATE INDEX IF NOT EXISTS "daily_attendance_results${suffix}_attendance_date_idx" ON
+                "daily_attendance_results${suffix}"
+                        USING btree (
+                        "attendance_date"
+                        "pg_catalog"."date_ops"
+                        ASC
+                        NULLS
+                        LAST
+                        );
+
+                CREATE INDEX IF NOT EXISTS "daily_attendance_results${suffix}_org_index_idx" ON
+                        "daily_attendance_results${suffix}" USING
+                                btree (
+                                "org_index"
+                                COLLATE "pg_catalog"."default"
+                                "pg_catalog"."text_ops"
+                                ASC NULLS LAST
+                                );
+
+                CREATE INDEX IF NOT EXISTS "daily_attendance_results${suffix}_org_index_path_idx" ON
+                        "daily_attendance_results${suffix}" USING
+                                btree (
+                                "org_index_path"
+                                COLLATE "pg_catalog"."default"
+                                "pg_catalog"."text_ops"
+                                ASC NULLS
+                                LAST
+                                );
+
+                CREATE INDEX IF NOT EXISTS "daily_attendance_results${suffix}_person_no_idx" ON
+                        "daily_attendance_results${suffix}" USING
+                                btree (
+                                "person_no"
+                                COLLATE "pg_catalog"."default"
+                                "pg_catalog"."text_ops"
+                                ASC NULLS LAST
+                                );
+
+        <!-- 创建唯一键 -->
+        ALTER TABLE "daily_attendance_results${suffix}"
+                ADD CONSTRAINT "daily_attendance_results${suffix}_unique_key"
+                        UNIQUE ("person_no", "attendance_date");
+
+        <!-- 创建主键 -->
+        ALTER TABLE "daily_attendance_results${suffix}"
+                ADD PRIMARY KEY ("id");
+    </insert>
+
+    <insert id="batchSave">
+        <foreach collection="results" item="item" separator=";">
+            INSERT INTO "daily_attendance_results${item.tableSuffix}" ("id",
+                                                                       "result",
+                                                                       "attendance_date",
+                                                                       "captured_at",
+                                                                       "original_record_id",
+                                                                       "person_no",
+                                                                       "person_name",
+                                                                       "org_index",
+                                                                       "org_index_path",
+                                                                       "created_at")
+            VALUES (#{item.id}, #{item.result}, #{item.attendanceDate}, #{item.capturedAt}, #{item.originalRecordId},
+                    #{item.personNo}, #{item.personName}, #{item.orgIndex}, #{item.orgIndexPath}, #{item.createdAt})
+                    ON CONFLICT ("person_no", "attendance_date")
+            <choose>
+                <when test="item.result == 99">
+                    DO NOTHING
+                </when>
+                <otherwise>
+                    DO UPDATE SET "result" = #{item.result}
+                </otherwise>
+            </choose>
+        </foreach>
+    </insert>
+
+    <select id="findAbsencePersonsOfDate" resultMap="PersonBO">
+        SELECT p.person_no,
+               p.person_name,
+               p.org_index,
+               CONCAT(org.index_path, p.org_index) AS org_index_path
+        FROM persons p
+                     LEFT JOIN organizations org ON org.org_index = p.org_index
+        WHERE p.person_no NOT IN (
+                SELECT person_no
+                FROM daily_attendance_results
+                WHERE attendance_date = #{date}
+                  AND result != 99)
+          AND p.at_school = true
+    </select>
+
+    <select id="findHistoryOfPerson" resultMap="HistoryItem">
+        SELECT to_char(attendance_date, 'yyyy-MM-dd') AS date, result
+        FROM daily_attendance_results
+        WHERE person_no = #{personNo}
+          AND attendance_date &gt;= #{startDate}
+          AND attendance_date &lt;= #{endDate}
+        ORDER BY date DESC
+    </select>
+</mapper>

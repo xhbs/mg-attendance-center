@@ -1,0 +1,20 @@
+@import '../../../../theme.less';
+.practiceSWapper {
+  height: calc(100% - 32px);
+  margin: 16px;
+}
+.practiceBox {
+    .linkText {
+        color: @primaryColor;
+        text-decoration: underline;
+        cursor: pointer;
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+    :global {
+        .biz-scene-components-exportWrapper{
+            display: inline-block;
+        }
+    }
+}

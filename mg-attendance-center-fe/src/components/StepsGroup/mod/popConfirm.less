@@ -1,0 +1,29 @@
+.popWapper {
+    position: relative;
+    margin-left: -22px;
+    padding: 0 6px;
+    min-width: 200px;
+    .close {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        font-size: 12px;
+        color: #ff6b83;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+    .textItem {
+        color: #aaa;
+        span {
+            color: #333;
+            margin-left: 10px;
+        }
+    }
+}
+.overlayClassName {
+    :global {
+        .ant-popover-buttons {
+            display: none;
+        }
+    }
+}

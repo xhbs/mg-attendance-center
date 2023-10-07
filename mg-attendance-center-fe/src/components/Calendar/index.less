@@ -1,0 +1,70 @@
+@height: 422px;
+
+.CalendarWapper {
+    margin-top: 20px;
+    .datesWapper {
+        width: @height;
+        border: 1px solid #E8E9EC;
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }
+    .time {
+        text-align: center;
+        // margin: 10px;
+        background: #f8f8fa;
+        border-bottom: 1px solid #E8E9EC;
+    }
+    .datesCaption {
+        margin: 10px 0;
+        color: #999;
+        width: @height;
+    }
+    .datesList {
+        width: @height;
+        display: flex;
+        flex-wrap: wrap;
+        color: #999;
+        .title {
+            width: 60px;
+            line-height: 50px;
+            text-align: center;
+        }
+        .date {
+            margin: 5px 10px;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 100px;
+        }
+        .normal {
+            background-color: #fff;
+            border: 1px solid #E8E9EC;
+        }
+        .blue {
+            background-color: #5584ff;
+            color: #fff;
+        }
+        .red {
+            background-color: #FC2344;
+            color: #fff;
+        }
+        .green {
+            background-color: #48AE16;
+            color: #fff;
+        }
+        .yellow {
+            background-color: #F7B500;
+            color: #fff;
+        }
+        .colorItem {
+            margin: 15px 25px 0 0;
+            span {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                vertical-align: middle;
+            }
+        }
+    }
+}

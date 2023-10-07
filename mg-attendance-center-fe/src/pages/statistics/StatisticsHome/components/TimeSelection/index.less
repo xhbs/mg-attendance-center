@@ -1,0 +1,44 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid #DCDEE3;
+  overflow: hidden;
+  >div {
+    height: 100%;
+    line-height: 30px;
+    padding: 0 4px;
+    
+    &:nth-child(3 + 2) {
+      padding: 0 0 0 4px;
+    }
+    font-size: 14px;
+    color: #333333;
+    text-align: center;
+    cursor: pointer;
+    &.active {
+      background: #5584FF;
+      color: white;
+    }
+    &:not(:first-child) {
+      border-left: 1px solid #DCDEE3;
+    }
+    :global {
+      .ant-select  {
+        min-width: auto;
+        .ant-select-selection {
+          border: 0;
+        }
+        .ant-select-selection__rendered {
+          margin-left: 0;
+          margin-right: 0;
+        }
+        .ant-select-selection--single {
+          height: 30px;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,132 @@
+.info-container {
+	.tag {
+		position: absolute;
+		top: 60px;
+		right: 20px;
+		width: 60px;
+		height: 28px;
+		text-align: center;
+		line-height: 28px;
+		transform: rotate(30deg);
+	}
+
+	.title {
+		font-weight: 700;
+	}
+
+	.column, .row {
+		display: flex;
+		padding-left: 10px;
+    margin: 20px 0;
+    margin-right: 8px;
+	}
+
+	.column {
+		flex-direction: column;
+
+		.item {
+			display: flex;
+			margin: 5px 0;
+
+
+			.label {
+				width: 80px;
+				text-align: right;
+				margin-right: 40px;
+				color: #999;
+			}
+
+			.avatar {
+				width: 100px;
+				height: 140px;
+			}
+		}
+	}
+
+	.row {
+		flex-direction: row;
+
+		.img-item, .step-item {
+			display: flex;
+			align-items: center;
+		}
+
+		.img-item {
+			margin: 0 20px;
+			flex-direction: column;
+
+			img {
+				width: 140px;
+				//height: 140px;
+			}
+
+			.time {
+				margin: 5px 0;
+			}
+
+			.camera {
+				width: 150px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				text-align: center;
+			}
+		}
+
+		.step-item {
+			margin-left: 20px;
+
+			.step-info {
+				margin-right: 20px;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				color: #999;
+				font-size: 12px;
+
+				.state {
+					margin-bottom: 5px;
+					width: 30px;
+					height: 30px;
+					border-radius: 50%;
+					line-height: 30px;
+					text-align: center;
+				}
+			}
+		}
+
+		.not-edit {
+			color: #999;
+		}
+	}
+
+	.not-attendance-record {
+		color: red;
+		font-size: 18px;
+		margin: 0 0 20px 128px;
+	}
+
+	.not-attendance {
+		margin: 0;
+		font-size: 18px;
+		text-align: center;
+		color: #999;
+	}
+}
+
+.loading {
+	text-align: center;
+}
+
+:global {
+	.attendance-details-popup-popover {
+		.ant-popover-title {
+			padding-left: 5px;
+		}
+
+		.ant-popover-inner-content {
+			padding: 5px !important;
+			min-height: 40px;
+		}
+	}
+}

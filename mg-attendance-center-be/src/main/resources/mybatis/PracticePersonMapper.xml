@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.PracticePersonMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.dto.response.PracticePersonListDTO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+        <result column="start_date" jdbcType="DATE" property="startDate"/>
+        <result column="end_date" jdbcType="DATE" property="endDate"/>
+        <result column="practice_status" jdbcType="SMALLINT" property="practiceStatus"/>
+        <result column="practice_company" jdbcType="VARCHAR" property="practiceCompany"/>
+        <result column="company_contacts" jdbcType="VARCHAR" property="companyContacts"/>
+        <result column="contacts_phone" jdbcType="VARCHAR" property="contactsPhone"/>
+        <result column="org_index_path" jdbcType="VARCHAR" property="orgIndexPath"/>
+        <result column="org_path_name" jdbcType="VARCHAR" property="orgPathName"/>
+    </resultMap>
+
+    <resultMap id="DetailResultMap" type="com.unisinsight.business.dto.response.PracticePersonDetailDTO"
+               extends="BaseResultMap">
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+        <result column="creator_code" jdbcType="VARCHAR" property="creatorCode"/>
+        <result column="creator_name" jdbcType="VARCHAR" property="creatorName"/>
+        <result column="creator_role_name" jdbcType="VARCHAR" property="creatorRoleName"/>
+        <result column="reported_at" jdbcType="TIMESTAMP" property="reportedAt"/>
+        <result column="practice_record_id" jdbcType="INTEGER" property="practiceRecordId"/>
+    </resultMap>
+
+    <resultMap id="PersonResultMap" type="com.unisinsight.business.dto.response.PersonBaseInfoDTO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+    </resultMap>
+
+    <resultMap id="PracticeInfo" type="com.unisinsight.business.bo.PracticeInfo">
+        <result column="start_date" jdbcType="DATE" property="startDate"/>
+        <result column="end_date" jdbcType="DATE" property="endDate"/>
+        <result column="practice_company" jdbcType="VARCHAR" property="practiceCompany"/>
+        <result column="company_contacts" jdbcType="VARCHAR" property="companyContacts"/>
+        <result column="contacts_phone" jdbcType="VARCHAR" property="contactsPhone"/>
+    </resultMap>
+
+    <resultMap id="PracticeAttendanceDetailDTO"
+               type="com.unisinsight.business.dto.response.PracticeAttendanceDetailDTO">
+        <result column="attendance_result" jdbcType="INTEGER" property="attendanceResult"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="class_name" jdbcType="VARCHAR" property="className"/>
+        <result column="attendance_date" jdbcType="VARCHAR" property="attendanceDate"/>
+        <result column="attendance_time" jdbcType="TIMESTAMP" property="attendanceTime"/>
+    </resultMap>
+
+    <resultMap id="PracticeAttendancePersonListDTO"
+               type="com.unisinsight.business.dto.response.PracticeAttendancePersonListDTO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+        <result column="record_id" jdbcType="INTEGER" property="recordId"/>
+        <result column="attendance_result" jdbcType="INTEGER" property="attendanceResult"/>
+        <result column="attendance_start_date" jdbcType="VARCHAR" property="attendanceStartDate"/>
+        <result column="attendance_end_date" jdbcType="VARCHAR" property="attendanceEndDate"/>
+        <result column="reported_at" jdbcType="TIMESTAMP" property="reportedAt"/>
+    </resultMap>
+
+    <resultMap id="PracticeAttendancePersonDetailsDTO"
+               type="com.unisinsight.business.dto.response.PracticeAttendancePersonDetailsDTO">
+        <result column="practice_person_id" jdbcType="INTEGER" property="practicePersonId"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+        <result column="class_name" jdbcType="VARCHAR" property="className"/>
+        <result column="attendance_result" jdbcType="INTEGER" property="attendanceResult"/>
+        <result column="attendance_date" jdbcType="VARCHAR" property="attendanceDate"/>
+        <result column="attendance_time" jdbcType="VARCHAR" property="attendanceTime"/>
+        <result column="attendance_start_date" jdbcType="VARCHAR" property="attendanceStartDate"/>
+        <result column="attendance_end_date" jdbcType="VARCHAR" property="attendanceEndDate"/>
+        <result column="creator_name" jdbcType="VARCHAR" property="creatorName"/>
+        <result column="creator_role_name" jdbcType="VARCHAR" property="creatorRoleName"/>
+        <result column="reported_at" jdbcType="TIMESTAMP" property="reportedAt"/>
+    </resultMap>
+
+    <resultMap id="DictBO" type="com.unisinsight.business.bo.DictBO">
+        <result column="id" jdbcType="INTEGER" property="id"/>
+        <result column="value" jdbcType="VARCHAR" property="value"/>
+    </resultMap>
+
+    <resultMap id="PracticeAttendancePersonBO" type="com.unisinsight.business.bo.PracticeAttendancePersonBO">
+        <result column="practice_record_id" jdbcType="INTEGER" property="practiceRecordId"/>
+        <result column="practice_person_id" jdbcType="INTEGER" property="practicePersonId"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+    </resultMap>
+
+    <select id="findById" resultMap="DetailResultMap">
+        SELECT p.id,
+               p.person_no,
+               p.person_name,
+               p.org_index,
+               p.org_name,
+               g.person_url,
+               r.start_date,
+               r.end_date,
+               r.practice_status,
+               r.practice_company,
+               r.company_contacts,
+               r.contacts_phone,
+               r.org_index_path,
+               r.org_path_name,
+               r.creator_code,
+               r.creator_name,
+               r.creator_role_name,
+               r.reported_at,
+               r.id AS practice_record_id
+        FROM practice_persons AS p
+                 INNER JOIN practice_records AS r ON p.practice_record_id = r.id
+                 INNER JOIN persons AS g ON p.person_no = g.person_no
+        WHERE p.id = #{id}
+    </select>
+
+    <sql id="conditions">
+        <where>
+            r.status = 3
+            AND r.attendance_state = 1
+            <choose>
+                <when test="fromMobile == true">
+                    AND r.creator_code = #{userCode}
+                </when>
+                <otherwise>
+                    AND r.org_index_path LIKE CONCAT(#{adminIndexPath},'%')
+                </otherwise>
+            </choose>
+
+            <if test="orgIndexPaths != null and orgIndexPaths.size() > 0">
+                AND (
+                <foreach collection="orgIndexPaths" item="item">
+                    r.org_index_path LIKE CONCAT(#{item},'%') OR
+                </foreach>
+                1 = 2
+                )
+            </if>
+
+            <if test="classOrgIndexes != null and classOrgIndexes.size() > 0">
+                AND p.org_index IN
+                <foreach collection="classOrgIndexes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
+            <if test="practiceStatus != null">
+                AND r.practice_status = #{practiceStatus}
+            </if>
+
+            <if test="endDate != null">
+                AND r.start_date &lt;=#{endDate}
+            </if>
+
+            <if test="startDate != null">
+                AND r.end_date &gt;= #{startDate}
+            </if>
+
+            <if test="search != null and search != ''">
+                <choose>
+                    <when test="fromMobile == true">
+                        AND p.person_name like CONCAT('%',#{search},'%')
+                    </when>
+                    <otherwise>
+                        AND
+                        (
+                        p.person_no LIKE CONCAT('%',#{search},'%')
+                        OR
+                        p.person_name like CONCAT('%',#{search},'%')
+                        OR
+                        r.practice_company LIKE CONCAT('%',#{search},'%')
+                        OR
+                        r.company_contacts LIKE CONCAT('%',#{search},'%')
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </sql>
+
+    <sql id="orderRule">
+        ORDER BY r.practice_status
+        <if test="orderRule == 'DESC'">
+            DESC
+        </if>, r.id DESC
+    </sql>
+
+    <select id="findByConditions" resultMap="BaseResultMap"
+            parameterType="com.unisinsight.business.dto.request.PracticePersonQueryReqDTO">
+        SELECT p.id,
+        p.person_no,
+        p.person_name,
+        g.person_url,
+        r.start_date,
+        r.end_date,
+        r.practice_status,
+        r.practice_company,
+        r.company_contacts,
+        r.contacts_phone,
+        CONCAT(r.org_index_path, p.org_index) AS org_index_path,
+        CONCAT(p.org_name, '&lt;', r.org_path_name) AS org_path_name
+        FROM practice_persons AS p
+        INNER JOIN practice_records AS r ON p.practice_record_id = r.id
+        INNER JOIN persons AS g ON g.person_no = p.person_no
+        <include refid="conditions"/>
+        <include refid="orderRule"/>
+    </select>
+
+    <select id="countByConditions" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM practice_persons AS p
+        LEFT JOIN practice_records AS r ON p.practice_record_id = r.id
+        <include refid="conditions"/>
+    </select>
+
+    <select id="exportByConditions" resultMap="BaseResultMap" resultSetType="FORWARD_ONLY" fetchSize="1000">
+        SELECT p.id,
+        p.person_no,
+        p.person_name,
+        r.start_date,
+        r.end_date,
+        r.practice_status,
+        r.practice_company,
+        r.company_contacts,
+        r.contacts_phone,
+        r.org_index_path,
+        r.org_path_name
+        FROM practice_persons AS p
+        LEFT JOIN practice_records AS r ON p.practice_record_id = r.id
+        <include refid="conditions"/>
+        <include refid="orderRule"/>
+        LIMIT #{limit}
+    </select>
+
+    <select id="findPersonNosOfRecordId" resultType="java.lang.String">
+        SELECT person_no
+        FROM practice_persons
+        WHERE practice_record_id = #{recordId}
+    </select>
+
+    <select id="findPersonsByRecordId" resultMap="PersonResultMap">
+        SELECT p.person_no, p.person_name, g.person_url, p.org_index, p.org_name
+        FROM practice_persons AS p
+                 LEFT JOIN persons AS g ON g.person_no = p.person_no
+        WHERE p.practice_record_id = #{recordId}
+        ORDER BY p.id
+    </select>
+
+    <select id="findPersonNameByRecordIds" resultMap="DictBO">
+        SELECT practice_record_id AS id, string_agg(person_name, '、' ORDER BY id) AS value
+        FROM practice_persons
+        WHERE practice_record_id IN
+        <foreach collection="recordIds" open="(" item="item" close=")" separator=",">
+            #{item}
+        </foreach>
+        GROUP BY practice_record_id
+        ORDER BY practice_record_id DESC
+    </select>
+
+    <select id="findFirstPersonUrl" resultMap="DictBO">
+        SELECT practice_record_id AS id, person_url AS value
+        FROM (
+        SELECT pp.practice_record_id,
+        p.person_url,
+        "row_number"() OVER ( PARTITION BY practice_record_id ORDER BY pp.id ) rn
+        FROM practice_persons pp
+        LEFT JOIN persons AS p ON p.person_no = pp.person_no
+        WHERE pp.practice_record_id IN
+        <foreach collection="recordIds" open="(" item="item" close=")" separator=",">
+            #{item}
+        </foreach>
+        AND p.person_url is not null) t
+        WHERE t.rn = 1
+    </select>
+
+    <select id="findPracticePersons" resultType="java.lang.String">
+        SELECT pp.person_no
+        FROM practice_persons AS pp
+        INNER JOIN practice_records as pr ON pr.id = pp.practice_record_id
+        WHERE pr.start_date &lt;= #{date}
+        AND pr.end_date &gt;= #{date}
+        AND person_no IN
+        <foreach collection="personNos" open="(" close=")" item="personNo" separator=",">
+            #{personNo}
+        </foreach>
+        AND pr.status = 3
+    </select>
+
+    <select id="findHaveTaskPersons" resultMap="PracticeAttendancePersonBO">
+        SELECT pp.practice_record_id, pp.id AS practice_person_id, pp.person_no
+        FROM practice_persons pp
+        INNER JOIN practice_records pr on pr.id = pp.practice_record_id
+        WHERE pp.person_no IN
+        <foreach collection="personNos" open="(" close=")" item="personNo" separator=",">
+            #{personNo}
+        </foreach>
+        AND pr.status = 2
+        AND pr.attendance_state = 0
+        AND pr.reported_at &lt;= to_timestamp(#{attendanceDate} || ' 23:59:59.999', 'yyyy-MM-dd HH24:MI:SS.MS')
+        AND pr.start_date &gt;= #{attendanceEndDate}
+    </select>
+
+    <update id="updateAttendanceResults">
+        <foreach collection="results" item="item" separator=";">
+            UPDATE "practice_persons"
+            SET attendance_result = #{item.attendanceResult},
+            attendance_time = #{item.attendanceTime}
+            WHERE id = #{item.practicePersonId}
+        </foreach>
+    </update>
+
+    <update id="updateAbsenceResults">
+        UPDATE "practice_persons"
+        SET attendance_result = 99,
+        attendance_time = #{attendanceTime},
+        read = false
+        WHERE practice_record_id IN
+        <foreach collection="recordIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="findAttendanceDetails" resultMap="PracticeAttendanceDetailDTO">
+        SELECT pp.person_no,
+        p.person_name,
+        p.org_name AS class_name,
+        COALESCE(pp.attendance_result, -1) AS attendance_result,
+        pp.attendance_time :: DATE AS attendance_date,
+        pp.attendance_time
+        FROM practice_persons pp
+        INNER JOIN persons P ON P.person_no = pp.person_no
+        WHERE pp.practice_record_id = #{recordId}
+        <if test="attendanceResult != null">
+            <choose>
+                <when test="attendanceResult == -1">
+                    AND pp.attendance_result is null
+                </when>
+                <otherwise>
+                    AND pp.attendance_result = #{attendanceResult}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="search != null and search != ''">
+            AND (pp.person_name LIKE CONCAT('%', #{search}, '%')
+            OR
+            pp.person_no LIKE CONCAT('%', #{search}, '%')
+            OR
+            p.org_name LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        <choose>
+            <when test="orderField != null and orderField != ''">
+                ORDER BY ${orderField}
+                <if test="orderRule != null and orderRule != ''">
+                    ${orderRule}
+                </if>
+            </when>
+            <otherwise>
+                ORDER BY pp.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAttendancePersons" resultMap="PracticeAttendancePersonListDTO">
+        SELECT pp.person_no,
+        pp.person_name,
+        p.person_url,
+        r.id AS record_id,
+        r.reported_at::DATE AS attendance_start_date,
+        DATE(r.start_date - INTERVAL '1 day') AS attendance_end_date,
+        COALESCE(pp.attendance_result, -1) AS attendance_result,
+        pp.attendance_time,
+        r.reported_at
+        FROM practice_persons pp
+        INNER JOIN practice_records r ON pp.practice_record_id = r.id
+        INNER JOIN persons p ON p.person_no = pp.person_no
+        WHERE r.creator_code = #{userCode}
+        AND r.status >= 2
+        <if test="attendanceResult != null">
+            <choose>
+                <when test="attendanceResult == -1">
+                    AND pp.attendance_result is null
+                </when>
+                <otherwise>
+                    AND pp.attendance_result = #{attendanceResult}
+                </otherwise>
+            </choose>
+        </if>
+
+        <if test="reportTimeMin != null">
+            AND r.reported_at &gt;= #{reportTimeMin}
+        </if>
+        <if test="reportTimeMax != null">
+            AND r.reported_at &lt;= #{reportTimeMax}
+        </if>
+        <if test="search != null">
+            AND (pp.person_name LIKE CONCAT('%', #{search}, '%')
+            OR
+            pp.person_no LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        ORDER BY pp.attendance_result DESC, pp.id
+    </select>
+
+    <select id="findPersonAttendanceDetails" resultMap="PracticeAttendancePersonDetailsDTO">
+        SELECT pp.id      AS practice_person_id,
+               pp.person_no,
+               pp.person_name,
+               p.person_url,
+               p.org_name AS class_name,
+               r.reported_at::DATE                   AS attendance_start_date,
+               DATE(r.start_date - INTERVAL '1 day') AS attendance_end_date,
+               COALESCE(pp.attendance_result, -1)    AS attendance_result,
+               pp.attendance_time::DATE              AS attendance_date,
+               pp.attendance_time,
+               r.creator_name,
+               r.creator_role_name,
+               r.reported_at
+        FROM practice_persons pp
+            INNER JOIN practice_records r
+        ON pp.practice_record_id = r.id
+            INNER JOIN persons p ON p.person_no = pp.person_no
+        WHERE r.id = #{recordId}
+          AND pp.person_no = #{personNo}
+    </select>
+
+    <select id="getAbsenceCount" resultType="java.lang.Integer">
+        SELECT COALESCE(COUNT(person_no), 0)
+        FROM practice_persons
+        WHERE practice_record_id IN (
+            SELECT id
+            FROM practice_records
+            WHERE creator_code = #{userCode}
+              AND status = 2
+        )
+          AND attendance_result = 99
+          AND read = false
+    </select>
+
+    <update id="markAsRead">
+        UPDATE "practice_persons"
+        SET read = true
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByPersonNoAndDate" resultType="integer">
+        SELECT practice_record_id
+        FROM practice_records r
+                 inner join practice_persons p on p.practice_record_id = r.id
+        where p.person_no = #{personNo}
+          and end_date >= #{date}
+          and #{date} >= start_date
+    </select>
+</mapper>

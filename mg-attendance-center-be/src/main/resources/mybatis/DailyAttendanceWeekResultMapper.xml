@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.DailyAttendanceWeekResultMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.DailyAttendanceWeekResultDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="result" jdbcType="SMALLINT" property="result"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_index_path" jdbcType="VARCHAR" property="orgIndexPath"/>
+        <result column="attendance_start_date" jdbcType="TIMESTAMP" property="attendanceStartDate"/>
+        <result column="attendance_end_date" jdbcType="TIMESTAMP" property="attendanceEndDate"/>
+        <result column="result_of_monday" jdbcType="SMALLINT" property="resultOfMonday"/>
+        <result column="result_of_tuesday" jdbcType="SMALLINT" property="resultOfTuesday"/>
+        <result column="result_of_wednesday" jdbcType="SMALLINT" property="resultOfWednesday"/>
+        <result column="result_of_thursday" jdbcType="SMALLINT" property="resultOfThursday"/>
+        <result column="result_of_friday" jdbcType="SMALLINT" property="resultOfFriday"/>
+        <result column="created_at" jdbcType="TIMESTAMP" property="createdAt"/>
+        <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="PersonOfClassBO" type="com.unisinsight.business.bo.PersonOfClassBO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+    </resultMap>
+
+    <resultMap id="DailyAttendanceDTO" type="com.unisinsight.business.dto.response.DailyAttendanceDTO">
+        <result column="num_of_registered" jdbcType="INTEGER" property="registeredStu"/>
+        <result column="num_of_normal" jdbcType="INTEGER" property="inSchool"/>
+        <result column="num_of_absence" jdbcType="INTEGER" property="absence"/>
+        <result column="num_of_leave" jdbcType="INTEGER" property="leave"/>
+        <result column="num_of_practice" jdbcType="INTEGER" property="practice"/>
+    </resultMap>
+
+    <insert id="createPartitionTable">
+        CREATE TABLE IF NOT EXISTS "daily_attendance_week_results${suffix}" PARTITION OF daily_attendance_week_results
+        FOR VALUES FROM ('${startDate}') TO ('${endDate}');
+
+        <!-- 创建索引 -->
+        CREATE INDEX IF NOT EXISTS "daily_attendance_week_results${suffix}_attendance_start_date_idx" ON
+        "daily_attendance_week_results${suffix}" USING btree (
+        "attendance_start_date"
+        "pg_catalog"."date_ops"
+        ASC
+        NULLS
+        LAST,
+        "attendance_end_date"
+        "pg_catalog"."date_ops"
+        ASC
+        NULLS
+        LAST
+        );
+
+        CREATE INDEX IF NOT EXISTS "daily_attendance_week_results${suffix}_org_index_idx" ON
+        "daily_attendance_week_results${suffix}"
+        USING btree (
+        "org_index"
+        COLLATE "pg_catalog"."default"
+        "pg_catalog"."text_ops"
+        ASC
+        NULLS
+        LAST
+        );
+
+        CREATE INDEX IF NOT EXISTS "daily_attendance_week_results${suffix}_org_index_path_idx" ON
+        "daily_attendance_week_results${suffix}" USING btree (
+        "org_index_path"
+        COLLATE "pg_catalog"."default"
+        "pg_catalog"."text_ops"
+        ASC
+        NULLS
+        LAST
+        );
+
+        CREATE INDEX IF NOT EXISTS "daily_attendance_week_results${suffix}_person_no_idx" ON
+        "daily_attendance_week_results${suffix}"
+        USING btree (
+        "person_no"
+        COLLATE "pg_catalog"."default"
+        "pg_catalog"."text_ops"
+        ASC
+        NULLS
+        LAST
+        );
+
+        <!-- 创建唯一键 -->
+        ALTER TABLE "daily_attendance_week_results${suffix}"
+        ADD CONSTRAINT "daily_attendance_week_results${suffix}_unique_key"
+        UNIQUE ("person_no", "attendance_start_date");
+
+        <!-- 创建主键 -->
+        ALTER TABLE "daily_attendance_week_results${suffix}"
+        ADD PRIMARY KEY ("id");
+    </insert>
+
+    <insert id="batchSave">
+        <foreach collection="results" item="item" separator=";">
+            INSERT INTO "daily_attendance_week_results${item.tableSuffix}" ("id",
+            "result",
+            "person_no",
+            "person_name",
+            "org_index",
+            "org_index_path",
+            "attendance_start_date",
+            "attendance_end_date",
+            "result_of_monday",
+            "result_of_tuesday",
+            "result_of_wednesday",
+            "result_of_thursday",
+            "result_of_friday",
+            "created_at")
+            VALUES (#{item.id}, #{item.result}, #{item.personNo}, #{item.personName}, #{item.orgIndex},
+            #{item.orgIndexPath}, #{item.attendanceStartDate}, #{item.attendanceEndDate},
+            #{item.resultOfMonday},
+            #{item.resultOfTuesday}, #{item.resultOfWednesday}, #{item.resultOfThursday},
+            #{item.resultOfFriday},
+            #{item.createdAt})
+            ON CONFLICT ("person_no", "attendance_start_date") DO UPDATE SET "result"= #{item.result}
+        </foreach>
+    </insert>
+
+    <update id="updateResult">
+        UPDATE "daily_attendance_week_results${tableSuffix}"
+        SET result              = #{result},
+            result_of_monday    = #{resultOfMonday},
+            result_of_tuesday   = #{resultOfTuesday},
+            result_of_wednesday = #{resultOfWednesday},
+            result_of_thursday  = #{resultOfThursday},
+            result_of_friday    = #{resultOfFriday},
+            updated_at          = now()
+        WHERE id = #{id}
+    </update>
+
+    <update id="batchUpdate">
+        <foreach collection="results" item="item" separator=";">
+            UPDATE "daily_attendance_week_results${item.tableSuffix}"
+            SET result = #{item.result},
+            result_of_monday = #{item.resultOfMonday},
+            result_of_tuesday = #{item.resultOfTuesday},
+            result_of_wednesday = #{item.resultOfWednesday},
+            result_of_thursday = #{item.resultOfThursday},
+            result_of_friday = #{item.resultOfFriday},
+            updated_at = #{item.updatedAt}
+            WHERE id = #{item.id}
+        </foreach>
+    </update>
+
+    <select id="findByPersonOfWeek" resultMap="BaseResultMap">
+        SELECT *
+        FROM daily_attendance_week_results
+        WHERE attendance_start_date = #{startDate}
+          AND person_no = #{personNo} LIMIT 1
+    </select>
+
+    <select id="findByPersonsOfWeek" resultMap="BaseResultMap">
+        SELECT *
+        FROM daily_attendance_week_results
+        WHERE attendance_start_date = #{startDate}
+        AND person_no IN
+        <foreach collection="personNos" item="personNo" open="(" separator="," close=")">
+            #{personNo}
+        </foreach>
+    </select>
+
+    <select id="findAbsencePersonsAtWeek" resultMap="PersonOfClassBO">
+        SELECT p.person_name, p.org_index
+        FROM daily_attendance_week_results r
+                 INNER JOIN persons p on r.person_no = p.person_no
+        WHERE r.attendance_start_date = #{monday}
+          AND r.result = 99
+    </select>
+
+    <select id="query" resultMap="BaseResultMap">
+        SELECT *
+        FROM daily_attendance_week_results
+        WHERE attendance_start_date &gt;= #{startDate}
+        AND attendance_start_date &lt;= #{endDate}
+        AND person_no = #{personNo}
+        <if test="result != null">
+            AND result = #{result}
+        </if>
+        <choose>
+            <when test="orderByResultDesc != null and orderByResultDesc == true">
+                ORDER BY result DESC
+            </when>
+            <otherwise>
+                ORDER BY result
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findStuWeekResultList" resultType="com.unisinsight.business.dto.StuWeekResultCountDTO">
+        SELECT person_no as personNo,
+        sum(case result when 0 then 1 else 0 end) as normalWeeks,
+        sum(case result when 99 then 1 else 0 end) as absentWeeks
+        FROM daily_attendance_week_results
+        <where>
+            <if test="personNoList != null and personNoList.size > 0">
+                and person_no in
+                <foreach collection="personNoList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="attendanceStartDate != null">
+                AND attendance_start_date &gt;= #{attendanceStartDate}
+            </if>
+            <if test="attendanceEndDate != null">
+                AND attendance_start_date &lt;= #{attendanceEndDate}
+            </if>
+        </where>
+        group by person_no
+    </select>
+
+    <select id="findStuWeekAttendanceResultList" resultType="com.unisinsight.business.bo.SubsidAttendanceResultBO">
+        SELECT "result" as result,
+        "person_no" as personNo,
+        "person_name" as personName,
+        "org_index" as orgIndex,
+        "attendance_start_date" as attendanceStartDate,
+        "attendance_end_date" as attendanceEndDate,
+        "result_of_monday" as resultOfMonday,
+        "result_of_tuesday" as resultOfTuesday,
+        "result_of_wednesday" as resultOfWednesday,
+        "result_of_thursday" as resultOfThursday,
+        "result_of_friday" as resultOfFriday
+        FROM daily_attendance_week_results
+        <where>
+            <if test="personNoList != null and personNoList.size > 0">
+                and person_no in
+                <foreach collection="personNoList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="attendanceStartDate != null">
+                AND attendance_start_date &gt;= #{attendanceStartDate}
+            </if>
+            <if test="attendanceEndDate != null">
+                AND attendance_start_date &lt;= #{attendanceEndDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="findByClasses" resultType="com.unisinsight.business.dto.AttendWeekResultDTO">
+        SELECT a.id,
+        a.result,
+        a.org_index,
+        a.org_index_path,
+        a.attendance_start_date,
+        a.attendance_end_date,
+        a.result_of_monday,
+        a.result_of_tuesday,
+        a.result_of_wednesday,
+        a.result_of_thursday,
+        a.result_of_friday,
+        p.person_no,
+        p.person_name,
+        p.person_url
+        FROM daily_attendance_week_results AS a
+        INNER JOIN persons AS p ON a.person_no = p.person_no
+        WHERE p.org_index IN
+        <foreach collection="classOrgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND attendance_start_date = #{date}
+        <if test="searchKey != null and searchKey != ''">
+            AND (a.person_name LIKE CONCAT('%', #{searchKey}, '%')
+            OR
+            a.person_no LIKE CONCAT('%', #{searchKey}, '%'))
+        </if>
+        <if test="result != null">
+            AND result = #{result}
+        </if>
+    </select>
+
+    <sql id="countNumOfRegistered">
+        SELECT COUNT(1)
+        FROM persons
+        WHERE org_index IN
+        <foreach collection="orgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND registered = TRUE
+    </sql>
+
+    <sql id="countNumOfNormal">
+        SELECT COUNT(person_no)
+        FROM daily_attendance_week_results
+        WHERE org_index IN
+        <foreach collection="orgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND "result" = 0
+        AND attendance_start_date = #{startDate}
+    </sql>
+
+    <sql id="countNumOfAbsence">
+        SELECT COUNT(person_no)
+        FROM daily_attendance_week_results
+        WHERE org_index IN
+        <foreach collection="orgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND "result" = 99
+        AND attendance_start_date = #{startDate}
+    </sql>
+
+    <sql id="countNumOfLeave">
+        SELECT COUNT(person_no)
+        FROM leave_records
+        WHERE org_index IN
+        <foreach collection="orgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND start_date &lt;= #{endDate}
+        AND end_date >= #{startDate}
+        AND status = 3
+    </sql>
+
+    <sql id="countNumOfPractice">
+        SELECT COUNT(p.person_no)
+        FROM practice_records AS r
+        LEFT JOIN practice_persons AS p ON r.id = p.practice_record_id
+        WHERE p.org_index IN
+        <foreach collection="orgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND r.start_date &lt;= #{endDate}
+        AND r.end_date >= #{startDate}
+        AND r.status = 3
+        AND r.practice_status = 2
+    </sql>
+
+    <select id="countStudents" resultMap="DailyAttendanceDTO">
+        SELECT (<include refid="countNumOfRegistered"/>) AS num_of_registered,
+        (<include refid="countNumOfNormal"/>) AS num_of_normal,
+        (<include refid="countNumOfAbsence"/>) AS num_of_absence,
+        (<include refid="countNumOfLeave"/>) AS num_of_leave,
+        (<include refid="countNumOfPractice"/>) AS num_of_practice
+    </select>
+
+    <select id="statisticsByParents" resultType="com.unisinsight.business.dto.StatisticsProvince"
+            statementType="STATEMENT">
+        select sum(case result when 0 then 1 else 0 end) as normalWeeks,
+        sum(case result when 99 then 1 else 0 end) as absentWeeks
+        from daily_attendance_week_results${suffix} w
+        left join organizations o on w.org_index = o.org_index
+        where o.org_parent_index in
+        <foreach collection="parents" item="item" separator="," open="(" close=")">
+            '${item}'
+        </foreach>
+    </select>
+
+    <select id="statisticsNotInParents" resultType="com.unisinsight.business.dto.StatisticsProvince"
+            statementType="STATEMENT">
+        select sum(case result when 0 then 1 else 0 end) as normalWeeks,
+        sum(case result when 99 then 1 else 0 end) as absentWeeks
+        from daily_attendance_week_results${suffix} w
+        left join organizations o on w.org_index = o.org_index
+        where o.org_parent_index not in
+        <foreach collection="parents" item="item" separator="," open="(" close=")">
+            '${item}'
+        </foreach>
+    </select>
+
+    <select id="allSchoolStatistics" resultType="com.unisinsight.business.dto.StatisticsAllSchool"
+            statementType="STATEMENT">
+        select o2.org_name                                as name,
+               sum(case result when 0 then 1 else 0 end)  as normalWeeks,
+               sum(case result when 99 then 1 else 0 end) as absentWeeks
+        from daily_attendance_week_results${suffix} w
+                 left join organizations o1 on w.org_index = o1.org_index
+                 left join organizations o2 on o2.org_index = o1.org_parent_index
+        where o1.sub_type = 5
+        group by o2.org_name
+        order by round(sum(case result when 0 then 1 else 0 end) /
+                       case count(1) when 0 then 1 else count(1):: numeric end, 4) desc limit 5;
+    </select>
+
+    <select id="statisticsBySchoolIds" resultType="com.unisinsight.business.dto.StatisticsAllSchool"
+            statementType="STATEMENT">
+        select o2.org_name as name,
+        sum(case result when 0 then 1 else 0 end) as normalWeeks,
+        sum(case result when 99 then 1 else 0 end) as absentWeeks
+        from daily_attendance_week_results${suffix} w
+        left join organizations o1 on w.org_index = o1.org_index
+        left join organizations o2 on o2.org_index = o1.org_parent_index
+        where o1.sub_type = 5 and o2.org_index in
+        <foreach collection="schoolIds" separator="," open="(" close=")" item="item">
+            '${item}'
+        </foreach>
+        group by o2.org_name
+        order by round(sum(case result when 0 then 1 else 0 end) /
+        case count(1) when 0 then 1 else count(1)::numeric end,4) desc
+        limit 5;
+    </select>
+
+    <select id="classStatistics" resultType="com.unisinsight.business.dto.StatisticsAllSchool"
+            statementType="STATEMENT">
+        select o1.org_name                                as name,
+               sum(case result when 0 then 1 else 0 end)  as normalWeeks,
+               sum(case result when 99 then 1 else 0 end) as absentWeeks
+        from daily_attendance_week_results${suffix} w
+                 left join organizations o1 on w.org_index = o1.org_index
+        where o1.sub_type = 5
+          and o1.org_parent_index = '${schoolId}'
+        group by o1.org_name
+        order by round(sum(case result when 0 then 1 else 0 end) /
+                       case count(1) when 0 then 1 else count(1)::numeric end, 4) desc limit 5;
+    </select>
+</mapper>

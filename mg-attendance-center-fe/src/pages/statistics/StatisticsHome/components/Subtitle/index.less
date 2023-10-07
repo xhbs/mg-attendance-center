@@ -1,0 +1,21 @@
+.wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  color: #4A4A4A;
+  position: relative;
+  height: 32px;
+  &::after {
+    position: absolute;
+    content: '';
+    left: 0;
+    top: 8px;
+    height: 16px;
+    width: 4px;
+    background: #5584FF;
+  }
+  span {
+    padding-left: 12px;
+  }
+}

@@ -1,0 +1,67 @@
+.contentBox{
+    @borderColor: #ddd;
+    height: 400px;
+    width: 1030px;
+    display: flex;
+    .leftBox{
+        width: 550px;
+        height: 100%;
+        display: flex;
+        border: 1px solid @borderColor;
+        .treeBox{
+            width: 35%;
+            height: 100%;
+            border-right: 1px solid @borderColor;
+            .tree{
+                height: calc(~'100% - 32px');
+                padding: 5px;
+            }
+        }
+        .table{
+            width: 65%;
+            .tableInput{
+                padding: 5px;
+                line-height: 32px;
+            }
+            :global{
+                .ellipsis{
+                    display: inline-block;
+                    max-width: 100%;
+                    overflow-x: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    vertical-align: bottom;
+                    word-break: keep-all;
+                }
+                .hz-table-fixed td{
+                    white-space: nowrap;
+                    word-wrap: normal;
+                    word-break: keep-all;
+                }
+            }
+        }
+    }
+    .title{
+        line-height: 32px;
+        padding: 0 10px;
+        color: #333;
+        background-color: #d2f0ff;
+    }
+    .midContent{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        .btn{
+            margin: 10px 20px;
+        }
+    }
+    .rightContent{
+        width: 356px;
+        border: 1px solid @borderColor;
+    }
+    :global{
+        .auto-complete-content{
+            line-height: 32px;
+        }
+    }
+}

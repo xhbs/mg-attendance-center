@@ -1,0 +1,74 @@
+<!--
+ * @Author: xiedan WX042
+ * @since: 2020-08-27 08:31:19
+ * @lastTime: 2021-09-23 20:46:00
+ * @FilePath: \biz-scene-coree:\hz\biz-scene-attendance-web\src\pages\document.ejs
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+    <meta name="referrer" content="always">
+
+	<script type="text/babel" src="../../node_modules/babel-polyfill/dist/polyfill.js"></script>
+    <script type="text/babel" src="../../node_modules/babel-polyfill/browser.js"></script>
+
+    <!-- socket -->
+    <% if (process.env.NODE_ENV==='development') { %>
+        <script src="/sockjs.min.js"></script>
+        <script src="/stomp.min.js"></script>
+    <% }else if(process.env.NODE_ENV==='production'){ %>
+        <script src="/sceneAttendance/sockjs.min.js"></script>
+        <script src="/sceneAttendance/stomp.min.js"></script>
+    <% } %>
+
+    <!-- vms chrome视频播放插件 -->
+    <% if (process.env.NODE_ENV==='development') { %>
+        <%- `
+        <script type="text/javascript" src="/video/react.development.js"></script>
+        <script type="text/javascript" src="/video/react-dom.development.js"></script>
+        <!-- <script type="text/javascript" src="/bclient/commonresource/vplay.js"></script> -->
+        `%>
+    <% }else if(process.env.NODE_ENV==='production'){ %>
+        <%- `
+        <!-- <script type="text/javascript" src="/bclient/commonresource/vplay.js"></script> -->
+        `%>
+    <% } %>
+
+    <!-- ugs -->
+    <!-- <link rel="stylesheet" async href="/api/ugis/static/ugis/ugis.css">
+    <script type="text/javascript" async src="/api/ugis/static/ugis/ugis.js"></script>
+    <script type="text/javascript" async src="/api/ugis/static/turf/turf.min.js"></script> -->
+
+	<% if(context.env === "development") { %>
+        <%- `
+            <script>
+              window.hzConfig = ${JSON.stringify(context.hzConfig)}
+              document.cookie = "username=admin;expires="  +new Date(4070880000000).toGMTString()
+              document.cookie = "usercode=admin;expires="  +new Date(4070880000000).toGMTString()
+            </script>
+        `%>
+    <% }else if(context.env === "production"){ %>
+        <script>
+            /* apollo配置参数注入update */
+            window.hzConfig = <$- JSON.stringify(config) $>
+        </script>
+    <% } %>
+
+</head>
+
+<body class="hz-base-style">
+    <div id="container">
+        <div id="root"></div>
+	</div>
+</body>
+
+</html>

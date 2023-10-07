@@ -1,0 +1,168 @@
+.record {
+  height: 100%;
+  padding: 23px;
+  .title {
+    height: 25px;
+    .block {
+      display: inline-block;
+      width: 5px;
+      height: 25px;
+      background: rgba(81, 187, 255, 1);
+    }
+    .text {
+      height: 25px;
+      margin-top: -33px;
+      margin-left: 10px;
+      color: rgba(255, 255, 255, 1);
+      font-weight: bold;
+      font-size: 18px;
+    }
+  }
+  .name {
+    span {
+      display: inline-block;
+      width: 50%;
+      color: rgba(255, 255, 255, 1);
+      font-weight: bold;
+      font-size: 12px;
+      text-align: center;
+    }
+  }
+  .major-pic {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .picture {
+      width: 100%;
+    }
+  }
+  .progress {
+    //   padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    :global {
+      .ant-progress {
+        width: 65%;
+        padding-left: 5px;
+      }
+    }
+    span {
+      color: rgba(255, 255, 255, 1);
+      font-weight: bold;
+      font-size: 12px;
+    }
+  }
+  .bottom {
+    div {
+      width: 100%;
+      color: rgba(255, 255, 255, 1);
+      font-weight: bold;
+      font-size: 12px;
+      text-align: center;
+    }
+  }
+  .major {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 190px;
+    margin-top: 17px;
+    background-image: url("@assets/nosence/record-big.png");
+    background-size: 100% 100%;
+    .majorLeft {
+      width: 60%;
+      height: 100%;
+      img {
+        width: 44%;
+        height: 140px;
+        margin: 16px 0 5px 10px;
+        background-size: 100% 100%;
+      }
+      .compare {
+        position: absolute;
+        display: inline-block;
+        height: 24px;
+        background: rgba(26, 44, 101, 1);
+        opacity: 0.9;
+      }
+    }
+    .majorRight {
+      width: 40%;
+      height: 100%;
+      padding: 15px 5px;
+    }
+    ul > li {
+        display: flex;
+        margin-top: 0.3vw;
+        div:first-child {
+            width: 60px;
+            color: rgba(255, 255, 255, 1);
+            font-weight: bold;
+            font-size: 14px;
+        }
+        div:last-child {
+            width: calc(100% - 60px);
+            color: #51bbff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    }
+    .firstName {
+      color: rgba(255, 255, 255, 1);
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .time {
+      color: rgba(255, 255, 255, 1);
+      font-weight: bold;
+      font-size: 12px;
+    }
+    .number {
+      margin-top: 0.4vw;
+    }
+  }
+  .items {
+    position: relative;
+    height: calc(100% - 240px);
+    margin-top: 17px;
+    .item:nth-child(odd) {
+      float: left;
+      margin: 0 10px 10px 0;
+    }
+    .item:nth-child(even) {
+      float: right;
+      margin-bottom: 10px;
+    }
+    .item {
+      width: 48%;
+      padding: 10px 10px 10px 0;
+      background-image: url("@assets/nosence/record-small.png");
+      background-size: 100% 100%;
+      .itemPic {
+        width: 100%;
+        height: 100px;
+        img {
+          width: 42%;
+          height: 100%;
+          margin-left: 7%;
+          background-size: 100% 100%;
+        }
+      }
+    }
+  }
+}
+
+.noData {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  .noDataImg {
+    width: 106px;
+    // margin: 0 auto; // IE下父元素设置水平垂直居中后则child-div不需设置此行样式
+    height: 105px;
+    background-image: url("@assets/nosence/record.png");
+    background-size: 100% 100%;
+  }
+}

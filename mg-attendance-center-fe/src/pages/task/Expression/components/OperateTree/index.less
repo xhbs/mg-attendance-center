@@ -1,0 +1,44 @@
+.operate-tree {
+  height: 100%;
+  padding: 16px;
+
+  .operate-tree-handler {
+    margin-bottom: 10px;
+
+    a {
+      margin-right: 20px;
+      color: grey;
+
+      &:hover {
+        color: @primary-color;
+      }
+    }
+  }
+
+  .operate-tree-search{
+    margin-bottom: 10px;
+  }
+
+  .operate-tree-list {
+    height: calc(100% - 72px);
+    overflow: hidden;
+
+    .node-item {
+      padding: 2px 5px;
+      cursor: pointer;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+
+      &:hover {
+        background: #eef2ff;
+      }
+
+      &-selected {
+        color: @primary-color;
+        background: #eef2ff;
+      }
+    }
+  }
+  
+}

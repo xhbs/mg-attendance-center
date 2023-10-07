@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.OriginalRecordMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.OriginalRecordDO"/>
+
+    <resultMap id="CaptureRecordDTO" type="com.unisinsight.business.dto.CaptureRecordDTO">
+        <result column="capture_image" jdbcType="VARCHAR" property="captureImage"/>
+        <result column="captured_at" jdbcType="VARCHAR" property="capturedAt"/>
+        <result column="channel_id" jdbcType="VARCHAR" property="channelId"/>
+    </resultMap>
+
+    <resultMap id="OriginalRecordBO" type="com.unisinsight.business.bo.OriginalRecordBO">
+        <result column="id" jdbcType="BIGINT" property="id"/>
+        <result column="pass_time" jdbcType="TIMESTAMP" property="passTime"/>
+        <result column="attendance_date" jdbcType="TIMESTAMP" property="attendanceDate"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index_path" jdbcType="VARCHAR" property="orgIndexPath"/>
+    </resultMap>
+
+    <insert id="createPartitionTable">
+        CREATE TABLE IF NOT EXISTS "original_records${suffix}" PARTITION OF original_records FOR VALUES FROM ('${startDate}') TO ('${endDate}');
+                CREATE INDEX IF NOT EXISTS "original_records{suffix}_pass_time_idx" ON original_records${suffix} USING btree ("pass_time");
+                CREATE INDEX IF NOT EXISTS "original_records{suffix}_person_no_idx" ON original_records${suffix} USING btree (
+                        "person_no"
+                        COLLATE "pg_catalog"."default"
+                        "pg_catalog"."text_ops"
+                        ASC
+                        NULLS
+                        LAST
+                        );
+                ALTER TABLE "original_records${suffix}"
+                        ADD PRIMARY KEY ("id");
+    </insert>
+
+    <insert id="batchSave" parameterType="java.util.List">
+        INSERT INTO original_records
+                (id, person_no, device_code, capture_image, source, pass_time)
+                VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.personNo}, #{item.deviceCode}, #{item.captureImage}, #{item.source}, #{item.passTime})
+        </foreach>
+    </insert>
+
+    <select id="findRecentCaptureRecords" resultMap="CaptureRecordDTO">
+        SELECT to_char(pass_time, 'yyyy-MM-dd HH24:MI:SS') AS captured_at, capture_image, device_code AS channel_id
+        FROM original_records
+        WHERE person_no = #{personNo}
+          AND pass_time &lt;= #{time}
+        ORDER BY pass_time DESC
+        LIMIT ${count}
+    </select>
+
+    <select id="fetchUnProcessRecordOrderly" resultMap="OriginalRecordBO">
+        SELECT r.id,
+               r.pass_time,
+               r.pass_time                       AS attendance_date,
+               p.person_no,
+               p.person_name,
+               p.org_index,
+               CONCAT(o.index_path, p.org_index) AS org_index_path
+        FROM original_records r
+                     INNER JOIN persons p ON r.person_no = p.person_no
+                     LEFT JOIN organizations o ON p.org_index = o.org_index
+                WHERE r.pass_time &gt;= #{timeLimit}
+        <if test="idOffset != null and idOffset > 0">
+            AND r.id &gt; ${idOffset}
+        </if>
+        ORDER BY r.id
+        LIMIT ${limit}
+    </select>
+
+    <select id="filterPersonNos" resultType="java.lang.String">
+        SELECT person_no
+        FROM original_records
+                WHERE
+                pass_time &gt;= #{startTime}
+                  AND pass_time &lt;= #{endTime}
+                  AND person_no in
+        <foreach collection="personNos" item="personNo" open="(" separator="," close=")">
+            #{personNo}
+        </foreach>
+    </select>
+</mapper>

@@ -1,0 +1,19 @@
+.mainWapper {
+  height: calc(100% - 32px);
+  margin: 16px;
+}
+.detailTableWapper {
+    :global {
+        .ant-table-fixed-right {
+            width: 180px;
+            height: 100%;
+            .ant-table-body-outer {
+                height: 100%;
+                overflow: scroll;
+            }
+            .ant-table-body-inner {
+                overflow: hidden !important;
+            }
+        }
+    }
+}

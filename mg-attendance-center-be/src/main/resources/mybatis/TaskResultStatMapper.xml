@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.TaskResultStatMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.TaskResultStatDO">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="task_id" jdbcType="INTEGER" property="taskId"/>
+        <result column="attendance_date" jdbcType="DATE" property="attendanceDate"/>
+        <result column="school_org_name" jdbcType="VARCHAR" property="schoolOrgName"/>
+        <result column="index_path" jdbcType="VARCHAR" property="indexPath"/>
+        <result column="index_path_name" jdbcType="VARCHAR" property="indexPathName"/>
+        <result column="student_num" jdbcType="INTEGER" property="studentNum"/>
+        <result column="absence_num" jdbcType="INTEGER" property="absenceNum"/>
+        <result column="absence_rate" jdbcType="INTEGER" property="absenceRate"/>
+        <result column="normal_num" jdbcType="INTEGER" property="normalNum"/>
+        <result column="leave_num" jdbcType="INTEGER" property="leaveNum"/>
+        <result column="practice_num" jdbcType="INTEGER" property="practiceNum"/>
+        <result column="created_at" jdbcType="TIMESTAMP" property="createdAt"/>
+        <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt"/>
+        <result column="school_org_index" jdbcType="VARCHAR" property="schoolOrgIndex"/>
+    </resultMap>
+
+    <resultMap id="TaskResultStatResDTO" type="com.unisinsight.business.dto.response.TaskResultStatResDTO">
+        <result column="school_org_index" jdbcType="VARCHAR" property="schoolOrgIndex"/>
+        <result column="school_org_name" jdbcType="VARCHAR" property="schoolOrgName"/>
+        <result column="index_path_name" jdbcType="DATE" property="indexPathName"/>
+        <result column="attendance_date" jdbcType="VARCHAR" property="attendanceDate"/>
+        <result column="student_num" jdbcType="INTEGER" property="studentNum"/>
+        <result column="absence_num" jdbcType="INTEGER" property="absenceNum"/>
+        <result column="absence_rate" jdbcType="INTEGER" property="absenceRate"/>
+        <result column="normal_num" jdbcType="INTEGER" property="normalNum"/>
+        <result column="leave_num" jdbcType="INTEGER" property="leaveNum"/>
+        <result column="practice_num" jdbcType="INTEGER" property="practiceNum"/>
+    </resultMap>
+
+    <insert id="batchSave">
+        <foreach collection="records" item="item" separator=";">
+            INSERT INTO "task_results_stat" ("task_id",
+                                             "attendance_date",
+                                             "school_org_index",
+                                             "school_org_name",
+                                             "index_path",
+                                             "index_path_name",
+                                             "absence_rate",
+                                             "student_num",
+                                             "absence_num",
+                                             "normal_num",
+                                             "leave_num",
+                                             "practice_num",
+                                             "created_at")
+            VALUES (#{item.taskId}, #{item.attendanceDate}, #{item.schoolOrgIndex}, #{item.schoolOrgName},
+                    #{item.indexPath}, #{item.indexPathName}, #{item.absenceRate}, #{item.studentNum},
+                    #{item.absenceNum},
+                    #{item.normalNum}, #{item.leaveNum}, #{item.practiceNum}, #{item.createdAt})
+            ON CONFLICT ("task_id","attendance_date","school_org_index")
+                    DO UPDATE SET "absence_rate" = #{item.absenceRate},
+                                  "student_num"  = #{item.studentNum},
+                                  "absence_num"  = #{item.absenceNum},
+                                  "normal_num"   = #{item.normalNum},
+                                  "leave_num"    = #{item.leaveNum},
+                                  "practice_num" = #{item.practiceNum},
+                                  "updated_at"   = now()
+        </foreach>
+    </insert>
+
+    <select id="list" resultMap="TaskResultStatResDTO">
+        SELECT *
+        FROM task_results_stat
+                WHERE task_id = #{taskId}
+        <if test="attendanceDate != null">
+            AND attendance_date = #{attendanceDate}
+        </if>
+        <choose>
+            <when test="schoolOrgIndex != null and schoolOrgIndex != ''">
+                AND school_org_index = #{schoolOrgIndex}
+            </when>
+            <otherwise>
+                <if test="orgIndexPaths != null and orgIndexPaths.size() > 0">
+                    AND (
+                    <foreach collection="orgIndexPaths" item="item" separator="OR">
+                        index_path LIKE CONCAT(#{item}, '%')
+                    </foreach>)
+                </if>
+            </otherwise>
+        </choose>
+
+        <if test="schoolName != null">
+            AND school_org_name LIKE CONCAT('%', #{schoolName}, '%')
+        </if>
+        <choose>
+            <when test="orderField != null and orderField != ''">
+                ORDER BY ${orderField}
+                <if test="orderRule != null and orderRule != ''">
+                    ${orderRule}
+                </if>,attendance_date DESC
+            </when>
+            <otherwise>
+                ORDER BY attendance_date DESC
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

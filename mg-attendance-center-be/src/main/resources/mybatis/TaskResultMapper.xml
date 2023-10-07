@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.TaskResultMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.TaskResultDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="result" jdbcType="SMALLINT" property="result"/>
+        <result column="attendance_date" jdbcType="DATE" property="attendanceDate"/>
+        <result column="task_id" jdbcType="INTEGER" property="taskId"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="original_record_id" jdbcType="BIGINT" property="originalRecordId"/>
+        <result column="captured_at" jdbcType="TIMESTAMP" property="capturedAt"/>
+        <result column="created_at" jdbcType="TIMESTAMP" property="createdAt"/>
+        <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="TaskResultCountBO" type="com.unisinsight.business.bo.TaskResultCountBO">
+        <result column="num_of_normal" jdbcType="INTEGER" property="numOfNormal"/>
+        <result column="num_of_leave" jdbcType="INTEGER" property="numOfLeave"/>
+        <result column="num_of_practice" jdbcType="INTEGER" property="numOfPractice"/>
+        <result column="num_of_appeal" jdbcType="INTEGER" property="numOfAppeal"/>
+    </resultMap>
+
+    <resultMap id="SpotTaskResultCountBO" type="com.unisinsight.business.bo.SpotTaskResultCountBO"
+               extends="TaskResultCountBO">
+        <result column="num_of_absent" jdbcType="INTEGER" property="numOfAbsent"/>
+        <result column="num_of_null" jdbcType="INTEGER" property="numOfNull"/>
+        <result column="num_of_total" jdbcType="INTEGER" property="numOfTotal"/>
+    </resultMap>
+
+    <resultMap id="TaskResultListResDTO" type="com.unisinsight.business.dto.response.TaskResultListResDTO">
+        <result column="result" jdbcType="INTEGER" property="result"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="class_name" jdbcType="VARCHAR" property="className"/>
+    </resultMap>
+
+    <insert id="batchSave">
+        <foreach collection="results" item="item" separator=";">
+            INSERT INTO "task_results" (
+            "id",
+            "result",
+            "attendance_date",
+            "task_id",
+            "person_no",
+            "person_name",
+            "org_index",
+            "original_record_id",
+            "captured_at",
+            "created_at" )
+            VALUES (#{item.id}, #{item.result},#{item.attendanceDate},#{item.taskId},#{item.personNo},
+            #{item.personName},#{item.orgIndex},#{item.originalRecordId},#{item.capturedAt},#{item.createdAt})
+            ON CONFLICT ("attendance_date","task_id","person_no")
+            <choose>
+                <when test="item.result == 99">
+                    DO NOTHING
+                </when>
+                <otherwise>
+                    DO UPDATE SET "result" = #{item.result},
+                    "original_record_id" = #{item.originalRecordId},
+                    "captured_at" = #{item.capturedAt},
+                    "updated_at" = now()
+                </otherwise>
+            </choose>
+        </foreach>
+    </insert>
+
+    <select id="list" resultMap="TaskResultListResDTO">
+        SELECT t.result, t.person_no, t.person_name, o.org_name AS class_name
+        FROM task_results t
+        LEFT JOIN organizations o ON o.org_index = t.org_index
+        WHERE t.task_id = #{taskId}
+        AND t.attendance_date = #{attendanceDate}
+        <if test="schoolOrgIndex != null">
+            AND t.org_index IN (
+            SELECT org_index FROM organizations
+            WHERE org_parent_index = #{schoolOrgIndex}
+            )
+        </if>
+        <if test="result != null">
+            AND result = #{result}
+        </if>
+        <if test="searchKey != null and searchKey != ''">
+            AND (
+            t.person_name LIKE CONCAT('%',#{searchKey},'%')
+            OR
+            t.person_no LIKE CONCAT('%',#{searchKey},'%')
+            OR
+            o.org_name LIKE CONCAT('%',#{searchKey},'%')
+            )
+        </if>
+        <choose>
+            <when test="orderField != null and orderField != ''">
+                ORDER BY ${orderField}
+                <if test="orderRule != null and orderRule != ''">
+                    ${orderRule}
+                </if>
+                , t.id desc
+            </when>
+            <otherwise>
+                ORDER BY result DESC, t.id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findDetailList" resultType="com.unisinsight.business.dto.response.SpotCheckTaskRecordDTO">
+        SELECT r.result as result ,
+        r.attendance_date as attendanceDate,
+        r.person_no as personNo,
+        r.person_name as personName,
+        r.org_index as orgIndex,
+        r.task_id as taskId,
+        t.name AS taskName,
+        t.month as month
+        FROM task_results r
+        INNER JOIN spot_check_tasks t on t.id = r.task_id
+        WHERE
+        attendance_date &lt;= #{attendanceDateEd}
+        AND attendance_date >= #{attendanceDateSt}
+        <if test="rule == null or rule == 1">
+            and t.call_the_roll = 1
+        </if>
+        <if test="rule != null and rule == 0">
+            and (t.call_the_roll is null or t.call_the_roll != 1)
+        </if>
+        AND r.person_no IN
+        <foreach collection="personNos" item="personNo" open="(" separator="," close=")">
+            #{personNo}
+        </foreach>
+    </select>
+
+    <select id="countAtDate" resultMap="TaskResultCountBO">
+        SELECT
+        COALESCE(SUM( case when result = 0 THEN 1 ELSE 0 END),0) AS num_of_normal,
+        COALESCE(SUM( case when result = 2 THEN 1 ELSE 0 END),0) AS num_of_practice,
+        COALESCE(SUM( case when result = 3 THEN 1 ELSE 0 END),0) AS num_of_leave,
+        COALESCE(SUM( case when result = 4 THEN 1 ELSE 0 END),0) AS num_of_appeal
+        FROM task_results
+        WHERE person_no IN
+        <foreach collection="personNos" item="personNo" open="(" separator="," close=")">
+            #{personNo}
+        </foreach>
+        AND task_id = #{taskId}
+        AND attendance_date = #{attendanceDate}
+    </select>
+
+    <select id="findResult" resultType="com.unisinsight.business.model.TaskResultDO">
+        SELECT *
+        FROM task_results
+        WHERE person_no = #{personNo}
+        AND task_id = #{taskId}
+        AND attendance_date = #{day}
+        <if test="result != null ">
+            AND result = #{result}
+        </if>
+    </select>
+
+    <select id="selectSpotPersonCount" resultMap="SpotTaskResultCountBO">
+        SELECT sum(CASE WHEN t.id IS NULL THEN 1 ELSE 0 end)  AS num_of_null,
+               sum(CASE WHEN t.result = 0 THEN 1 ELSE 0 end)  AS num_of_normal,
+               sum(CASE WHEN t.result = 99 THEN 1 ELSE 0 end) AS num_of_absent,
+               sum(CASE WHEN t.result = 2 THEN 1 ELSE 0 end)  AS num_of_practice,
+               sum(CASE WHEN t.result = 3 THEN 1 ELSE 0 end)  AS num_of_leave,
+               count(1)                                       AS num_of_total
+        FROM task_person_relations p
+                 LEFT JOIN task_results t ON p.task_id = t.task_id and p.person_no = t.person_no
+                 left join persons person on person.person_no = p.person_no
+                 left join organizations o on o.org_index = person.org_index
+        where p.task_id = #{taskId}
+          and o.org_index = #{orgIndex}
+    </select>
+
+    <select id="selectByTaskIdAndOrg" resultType="com.unisinsight.business.model.TaskResultDO">
+        SELECT *
+        FROM task_results t
+                 LEFT JOIN organizations o ON o.org_index = t.org_index
+        WHERE o.org_parent_index = #{orgIndex}
+          AND task_id = #{taskId}
+    </select>
+</mapper>

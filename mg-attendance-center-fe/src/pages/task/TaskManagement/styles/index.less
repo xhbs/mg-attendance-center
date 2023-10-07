@@ -1,0 +1,23 @@
+@import '../../../../theme.less';
+
+.taskManagmentWapper {
+    .linkText {
+        color: @primaryColor;
+        text-decoration: underline;
+        cursor: pointer;
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+    .label {
+        &::before {
+            display: inline-block;
+            margin-right: 4px;
+            color: #fc2344;
+            font-size: 14px;
+            font-family: SimSun, sans-serif;
+            line-height: 1;
+            content: '*';
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "name": "attendance",
+      "script": "./bin/www",
+      "instances": 1,
+      "exec_mode": "cluster",
+      "node_args": "--harmony",
+      "cwd": "./"
+    }
+  ]
+}

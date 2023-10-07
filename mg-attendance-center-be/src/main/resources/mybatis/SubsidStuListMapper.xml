@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.SubsidStuListMapper">
+  <resultMap id="BaseResultMap" type="com.unisinsight.business.model.SubsidStuListDO">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="sub_list_index" jdbcType="VARCHAR" property="subListIndex" />
+    <result column="person_no" jdbcType="VARCHAR" property="personNo" />
+    <result column="person_name" jdbcType="VARCHAR" property="personName" />
+    <result column="student_no" jdbcType="VARCHAR" property="studentNo" />
+    <result column="school_roll_no" jdbcType="VARCHAR" property="schoolRollNo" />
+    <result column="cert_type" jdbcType="VARCHAR" property="certType" />
+    <result column="cert_no" jdbcType="VARCHAR" property="certNo" />
+    <result column="gender" jdbcType="CHAR" property="gender" />
+    <result column="birth_day" jdbcType="VARCHAR" property="birthDay" />
+    <result column="grade_name" jdbcType="VARCHAR" property="gradeName" />
+    <result column="class_name" jdbcType="VARCHAR" property="className" />
+    <result column="year" jdbcType="VARCHAR" property="year" />
+    <result column="month" jdbcType="VARCHAR" property="month" />
+    <result column="subsid_grade" jdbcType="VARCHAR" property="subsidGrade" />
+    <result column="aply_reason" jdbcType="VARCHAR" property="aplyReason" />
+    <result column="aply_reson_desc" jdbcType="VARCHAR" property="aplyResonDesc" />
+    <result column="major" jdbcType="VARCHAR" property="major" />
+    <result column="admission_date" jdbcType="VARCHAR" property="admissionDate" />
+    <result column="pay_amt" jdbcType="VARCHAR" property="payAmt" />
+    <result column="bank_no" jdbcType="VARCHAR" property="bankNo" />
+    <result column="nation_area_entry" jdbcType="CHAR" property="nationAreaEntry" />
+    <result column="tradition_opera_major" jdbcType="CHAR" property="traditionOperaMajor" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+
+  <sql id="base_sql">
+     subsid_stu_list.id,
+    subsid_stu_list.sub_list_index,
+    subsid_stu_list.person_no,
+    subsid_stu_list.person_name,
+    subsid_stu_list.student_no,
+    subsid_stu_list.school_roll_no,
+    subsid_stu_list.cert_type,
+    subsid_stu_list.cert_no,
+    subsid_stu_list.gender,
+    subsid_stu_list.birth_day,
+    subsid_stu_list.grade_name,
+    subsid_stu_list.class_name,
+    subsid_stu_list.year,
+    subsid_stu_list.month,
+    subsid_stu_list.subsid_grade,
+    subsid_stu_list.aply_reason,
+    subsid_stu_list.aply_reson_desc,
+    subsid_stu_list.major,
+    subsid_stu_list.admission_date,
+    subsid_stu_list.pay_amt,
+    subsid_stu_list.bank_no,
+    subsid_stu_list.nation_area_entry,
+    subsid_stu_list.tradition_opera_major,
+    subsid_stu_list.create_time
+  </sql>
+
+    <select id="findNoLegalSubsidStuList" resultMap="BaseResultMap">
+      select
+       <include refid="base_sql"/>
+      from
+      subsid_stu_list subsid_stu_list
+      left join persons person on subsid_stu_list.person_no = person.person_no
+      where
+      subsid_stu_list.sub_list_index = #{subListIndex}
+      AND person.person_no is null
+    </select>
+
+  <select id="findSubsidStuList" resultMap="BaseResultMap">
+    select
+      <include refid="base_sql"/>
+    from
+     subsid_stu_list subsid_stu_list
+    inner join persons person on subsid_stu_list.person_no = person.person_no
+    left join organizations org on org.org_index = person.org_index
+    <where>
+      <if test="subListIndex != null">
+        AND subsid_stu_list.sub_list_index = #{subListIndex}
+      </if>
+      <if test="orgIndexs != null and orgIndexs.size > 0">
+        and org.org_index in
+        <foreach collection="orgIndexs" item="item" separator="," open="(" close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
+
+
+  <select id="findSubsidStuExcelList" resultMap="BaseResultMap">
+    select
+    <include refid="base_sql"/>
+    from
+    subsid_match_static_stu stu
+    inner join subsid_compare_rule rule on stu.subsid_rule_id= rule.id
+    inner join  subsid_stu_list subsid_stu_list on subsid_stu_list.person_no=stu.person_no
+    <where>
+      stu.status='1'
+      AND stu.subsid_rule_id = #{subsidRuleId}
+      AND subsid_stu_list.sub_list_index = #{subListIndex}
+      <if test="orgParentIndexs != null and orgParentIndexs.size > 0">
+        and stu.org_parent_index in
+        <foreach collection="orgParentIndexs" item="item" separator="," open="(" close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
+
+
+  <select id="findPersonListBySubListIndex" resultType="String" >
+    select
+     person_no as personNo
+    from
+    subsid_stu_list
+    <where>
+      <if test="subListIndex != null">
+        AND sub_list_index = #{subListIndex}
+      </if>
+    </where>
+  </select>
+
+
+  <select id="findSubListIndex" resultType="com.unisinsight.business.bo.SubsidStuCountBO"  >
+      select sub_list_index,count(*) person_count
+        from subsid_stu_list
+      group by sub_list_index
+        order by sub_list_index desc ;
+  </select>
+
+  <select id="findSubsidStuListBySubListIndex" resultType="com.unisinsight.business.bo.SubsidStuBO" >
+    select
+    stu.person_no as personNo,
+    org.org_index as orgIndex,
+    org.org_parent_index as orgParentIndex
+    from
+    subsid_stu_list stu
+    inner join persons person on  stu.person_no=person.person_no
+    left join organizations org on person.org_index=org.org_index
+    <where>
+      <if test="subListIndex != null">
+        AND stu.sub_list_index = #{subListIndex}
+      </if>
+    </where>
+  </select>
+
+  <select id="findOrgIndexListBySubListIndex" resultType="String" >
+    select
+    org.org_index as orgIndex
+    from
+    subsid_stu_list subsidStu
+    inner join persons person on  subsidStu.person_no=person.person_no
+    left join organizations org on person.org_index=org.org_index
+    <where>
+      <if test="subListIndex != null">
+        AND sub_list_index = #{subListIndex}
+      </if>
+    </where>
+    GROUP BY orgIndex
+  </select>
+
+  <update id="batchUpdate">
+    <foreach collection="results" item="item" separator=";">
+      UPDATE "subsid_stu_list"
+      SET
+      person_name = #{item.personName},
+      id_card = #{item.idCard},
+      school_roll_no = #{item.schoolRollNo}
+      WHERE id = #{item.id}
+    </foreach>
+  </update>
+
+</mapper>

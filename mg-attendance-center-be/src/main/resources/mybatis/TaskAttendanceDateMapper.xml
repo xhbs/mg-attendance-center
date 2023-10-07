@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.TaskAttendanceDateMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.TaskAttendanceDateDO">
+        <id column="task_id" jdbcType="INTEGER" property="taskId"/>
+        <result column="attendance_date" jdbcType="DATE" property="attendanceDate"/>
+    </resultMap>
+
+    <select id="findByTask" resultType="java.lang.String">
+        SELECT attendance_date
+        FROM task_attendance_dates
+        WHERE task_id = #{taskId}
+        ORDER BY attendance_date
+    </select>
+</mapper>

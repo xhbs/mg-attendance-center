@@ -1,0 +1,52 @@
+.details {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 99;
+	padding: 20px;
+	width: 100%;
+	height: 100%;
+	background-color: #ececec;
+
+	.top-back {
+		margin-bottom: 4px;
+		background-color: #fff;
+		border-radius: 4px;
+		height: 32px;
+		line-height: 32px;
+
+		.back {
+			font-size: 14px;
+			margin-left: 23px;
+			color: #333;
+			cursor: pointer;
+
+			.icon {
+				margin-right: 14px;
+				color: #5584ff;
+			}
+		}
+	}
+
+	.main {
+		display: flex;
+		height: calc(100% - 36px);
+	}
+}
+
+:global {
+	.fund-comparison-details-table {
+		margin-left: 16px;
+		flex: 1;
+
+		.hz-layout-vertical-header {
+			border-top-left-radius: 4px !important;
+			border-top-right-radius: 4px !important;
+		}
+
+		.hz-layout-vertical-body, .hz-table-wrapper {
+			border-bottom-left-radius: 4px !important;
+			border-bottom-right-radius: 4px !important;
+		}
+	}
+}

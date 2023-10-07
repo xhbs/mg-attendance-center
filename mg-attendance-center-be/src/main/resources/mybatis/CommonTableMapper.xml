@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.CommonTableMapper">
+
+    <select id="tableExists" resultType="java.lang.Boolean">
+        SELECT EXISTS
+                   (SELECT * FROM pg_class PC WHERE PC.relname LIKE CONCAT(#{tableName}, '_%'))
+    </select>
+
+    <select id="getChildTables" resultType="java.lang.String">
+        SELECT child.relname
+        FROM pg_inherits
+                 LEFT JOIN pg_class AS parent
+                           ON pg_inherits.inhparent = parent.oid
+                 LEFT JOIN pg_class AS child
+                           ON pg_inherits.inhrelid = child.oid
+        WHERE parent.relname = #{tableName};
+    </select>
+
+    <select id="getPartitionedLatestDate" resultType="java.time.LocalDate">
+        SELECT to_date(max(reverse(split_part(reverse(child.relname), '_', 1))), 'yyyyMMdd')
+        FROM pg_inherits
+                 LEFT JOIN pg_class AS parent ON pg_inherits.inhparent = parent.oid
+                 LEFT JOIN pg_class AS child ON pg_inherits.inhrelid = child.oid
+        WHERE parent.relname = #{tableName}
+    </select>
+
+    <select id="getPartitionedEarliestDate" resultType="java.time.LocalDate">
+        SELECT to_date(min(reverse(split_part(reverse(child.relname), '_', 2))), 'yyyyMMdd')
+        FROM pg_inherits
+                 LEFT JOIN pg_class AS parent ON pg_inherits.inhparent = parent.oid
+                 LEFT JOIN pg_class AS child ON pg_inherits.inhrelid = child.oid
+        WHERE parent.relname = #{tableName}
+    </select>
+
+    <insert id="createExtensions">
+        <foreach collection="extensions" item="item" separator=";">
+            CREATE extension IF NOT EXISTS ${item}
+        </foreach>
+    </insert>
+</mapper>

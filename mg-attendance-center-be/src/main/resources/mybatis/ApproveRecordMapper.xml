@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.ApproveRecordMapper">
+
+    <insert id="batchSave">
+        INSERT INTO approve_records
+        (target_id, target_type, serial_no, name, result, comment, assignee_user_code, assignee_user_name,
+        assignee_role_code, assignee_role_name, assigned_at)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.targetId},#{item.targetType},#{item.serialNo},#{item.name},#{item.result},#{item.comment},
+            #{item.assigneeUserCode},#{item.assigneeUserName},#{item.assigneeRoleCode},
+            #{item.assigneeRoleName},#{item.assignedAt} )
+        </foreach>
+    </insert>
+</mapper>

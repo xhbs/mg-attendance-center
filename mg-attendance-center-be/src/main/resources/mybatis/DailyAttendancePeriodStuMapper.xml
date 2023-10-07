@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.DailyAttendancePeriodStuMapper">
+  <resultMap id="BaseResultMap" type="com.unisinsight.business.model.DailyAttendancePeriodStuDO">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="id" jdbcType="BIGINT" property="id" />
+    <result column="person_no" jdbcType="VARCHAR" property="personNo" />
+    <result column="person_name" jdbcType="VARCHAR" property="personName" />
+    <result column="org_index" jdbcType="VARCHAR" property="orgIndex" />
+    <result column="org_name" jdbcType="VARCHAR" property="orgName" />
+    <result column="school_year" jdbcType="VARCHAR" property="schoolYear" />
+    <result column="school_term" jdbcType="CHAR" property="schoolTerm" />
+    <result column="year_month" jdbcType="VARCHAR" property="yearMonth" />
+    <result column="check_week" jdbcType="SMALLINT" property="checkWeek" />
+    <result column="normal_weeks" jdbcType="SMALLINT" property="normalWeeks" />
+    <result column="absent_weeks" jdbcType="SMALLINT" property="absentWeeks" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+
+
+  <insert id="createPartitionTable">
+        CREATE TABLE IF NOT EXISTS "daily_attendance_static_period_stu${suffix}"  PARTITION OF daily_attendance_static_period_stu FOR VALUES FROM ('${startDate}') TO ('${endDate}');
+
+        CREATE INDEX "daily_attendance_static_period_stu${suffix}_idxs" ON "daily_attendance_static_period_stu${suffix}" USING btree (
+          "org_index" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST,
+          "school_year" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST,
+          "school_term" COLLATE "pg_catalog"."default" "pg_catalog"."bpchar_ops" ASC NULLS LAST,
+          "check_week" "pg_catalog"."int2_ops" ASC NULLS LAST
+        );
+        CREATE INDEX "daily_attendance_static_period_stu${suffix}_idx" ON "daily_attendance_static_period_stu${suffix}" USING btree (
+          "person_no" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+        );
+        CREATE INDEX  "daily_attendance_static_period_stu${suffix}_create_time_idx" ON "daily_attendance_static_period_stu${suffix}" USING btree (
+        "create_time" "pg_catalog"."timestamp_ops" ASC NULLS LAST
+        );
+
+        ALTER TABLE "daily_attendance_static_period_stu${suffix}" ADD PRIMARY KEY ("id");
+    </insert>
+
+  <select id="getEarliestPartitionTime" resultType="java.time.LocalDateTime">
+
+  </select>
+
+  <insert id="migrateFromOldTable">
+
+  </insert>
+
+
+
+  <select id="findStuAttendanceList" resultMap="BaseResultMap">
+    select  * from daily_attendance_static_period_stu
+    <where>
+      <if test="orgIndex != null">
+        AND org_index = #{orgIndex}
+      </if>
+      <if test="orgName != null">
+        AND org_name = #{orgName}
+      </if>
+      <if test="likeNoOrName != null">
+        AND (person_name like CONCAT('%',#{likeNoOrName},'%') or person_no like CONCAT('%',#{likeNoOrName},'%'))
+      </if>
+      <if test="schoolYear != null">
+        AND school_year = #{schoolYear}
+      </if>
+      <if test="schoolTerm != null">
+        AND school_term = #{schoolTerm}
+      </if>
+      <if test="yearMonth != null">
+        AND year_month = #{yearMonth}
+      </if>
+      <if test="checkWeek != null">
+        AND check_week = #{checkWeek}
+      </if>
+      <if test="createTime != null">
+        AND create_time = #{createTime}
+      </if>
+      <if test="createTimeSt != null">
+        AND create_time >= #{createTimeSt}
+      </if>
+      <if test="createTimeEd != null">
+        AND create_time &lt;= #{createTimeEd}
+      </if>
+      <if test="orgIndexs != null and orgIndexs.size > 0">
+        and org_index in
+        <foreach collection="orgIndexs" item="item" separator="," open="(" close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="personNos != null and personNos.size > 0">
+        and person_no in
+        <foreach collection="personNos" item="item" separator="," open="(" close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+    order by school_year desc,school_term desc,year_month desc,check_week desc
+
+  </select>
+
+  <select id="countByConditions" resultType="int">
+    select  count(*) from daily_attendance_static_period_stu
+    <where>
+      <if test="orgIndex != null">
+        AND org_index = #{orgIndex}
+      </if>
+      <if test="orgName != null">
+        AND org_name = #{orgName}
+      </if>
+      <if test="likeNoOrName != null">
+        AND (person_name like CONCAT('%',#{likeNoOrName},'%') or person_no like CONCAT('%',#{likeNoOrName},'%'))
+      </if>
+      <if test="schoolYear != null">
+        AND school_year = #{schoolYear}
+      </if>
+      <if test="schoolTerm != null">
+        AND school_term = #{schoolTerm}
+      </if>
+      <if test="yearMonth != null">
+        AND year_month = #{yearMonth}
+      </if>
+      <if test="checkWeek != null">
+        AND check_week = #{checkWeek}
+      </if>
+      <if test="orgIndexs != null and orgIndexs.size > 0">
+        and org_index in
+        <foreach collection="orgIndexs" item="item" separator="," open="(" close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="createTime != null">
+        AND create_time = #{createTime}
+      </if>
+      <if test="createTimeSt != null">
+        AND create_time >= #{createTimeSt}
+      </if>
+      <if test="createTimeEd != null">
+        AND create_time &lt;= #{createTimeEd}
+      </if>
+    </where>
+
+  </select>
+
+
+
+  <update id="batchUpdate">
+    <foreach collection="results" item="item" separator=";">
+      UPDATE "daily_attendance_static_period_stu${item.tableSuffix}"
+      SET
+      check_week = #{item.checkWeek},
+      normal_weeks = #{item.normalWeeks},
+      absent_weeks = #{item.absentWeeks},
+      update_time = #{item.updateTime}
+      WHERE id = #{item.id}
+    </foreach>
+  </update>
+
+</mapper>

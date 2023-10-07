@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.LeaveRecordMapper">
+    <resultMap id="LeaveRecordListDTO" type="com.unisinsight.business.dto.response.LeaveRecordListDTO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="status" jdbcType="SMALLINT" property="status"/>
+        <result column="type" jdbcType="SMALLINT" property="type"/>
+        <result column="start_date" jdbcType="TIMESTAMP" property="startDate"/>
+        <result column="end_date" jdbcType="TIMESTAMP" property="endDate"/>
+        <result column="reason" jdbcType="VARCHAR" property="reason"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+        <result column="school_name" jdbcType="VARCHAR" property="schoolName"/>
+        <result column="approved_by" jdbcType="VARCHAR" property="approvedBy"/>
+        <result column="org_index_path" jdbcType="VARCHAR" property="orgIndexPath"/>
+        <result column="org_path_name" jdbcType="VARCHAR" property="orgPathName"/>
+        <result column="creator_code" jdbcType="VARCHAR" property="creatorCode"/>
+        <result column="creator_name" jdbcType="VARCHAR" property="creatorName"/>
+        <result column="creator_role_name" jdbcType="VARCHAR" property="creatorRoleName"/>
+        <result column="reported_at" jdbcType="VARCHAR" property="reportedAt"/>
+    </resultMap>
+
+    <resultMap id="LeaveInfo" type="com.unisinsight.business.bo.LeaveInfo">
+        <result column="status" jdbcType="SMALLINT" property="status"/>
+        <result column="type" jdbcType="SMALLINT" property="type"/>
+        <result column="start_date" jdbcType="TIMESTAMP" property="startDate"/>
+        <result column="end_date" jdbcType="TIMESTAMP" property="endDate"/>
+    </resultMap>
+
+    <resultMap id="LeaveInfoDTO" type="com.unisinsight.business.dto.LeaveInfoDTO">
+        <result column="status" jdbcType="SMALLINT" property="status"/>
+        <result column="start_date" jdbcType="VARCHAR" property="startDate"/>
+        <result column="end_date" jdbcType="VARCHAR" property="endDate"/>
+        <result column="reason" jdbcType="VARCHAR" property="reason"/>
+    </resultMap>
+
+    <resultMap id="DetailResultMap" type="com.unisinsight.business.dto.response.LeaveRecordDetailDTO"
+               extends="LeaveRecordListDTO">
+        <result column="leave_state" javaType="INTEGER" property="leaveState"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+    </resultMap>
+
+    <resultMap id="CountMap" type="com.unisinsight.business.dto.CountDTO">
+        <result column="key" jdbcType="VARCHAR" property="key"/>
+        <result column="count" jdbcType="INTEGER" property="count"/>
+    </resultMap>
+
+    <resultMap id="LeaveStatListResDTO" type="com.unisinsight.business.dto.response.LeaveStatListResDTO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="type" jdbcType="SMALLINT" property="type"/>
+        <result column="leave_state" javaType="INTEGER" property="leaveState"/>
+        <result column="start_date" jdbcType="VARCHAR" property="startDate"/>
+        <result column="end_date" jdbcType="VARCHAR" property="endDate"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+        <result column="school_name" jdbcType="VARCHAR" property="schoolName"/>
+        <result column="creator_name" jdbcType="VARCHAR" property="creatorName"/>
+        <result column="approved_by" jdbcType="VARCHAR" property="approvedBy"/>
+    </resultMap>
+
+    <select id="findById" resultMap="DetailResultMap">
+        SELECT l.*,
+               p.person_url
+        FROM leave_records AS l
+                     LEFT JOIN persons AS p ON p.person_no = l.person_no
+        WHERE l.id = #{id}
+        LIMIT 1
+    </select>
+
+    <select id="findLeaveInfoById" resultMap="LeaveInfo">
+        SELECT l.status,
+               l.type,
+               l.start_date,
+               l.end_date,
+               l.reason
+        FROM leave_records AS l
+        WHERE l.id = #{id}
+    </select>
+
+    <sql id="conditions">
+        <where>
+            <choose>
+                <when test="fromMobile == true">
+                    l.creator_code = #{userCode}
+                </when>
+                <otherwise>
+                    l.status > 1
+                    AND l.org_index_path LIKE CONCAT(#{adminIndexPath},'%')
+                </otherwise>
+            </choose>
+
+            <if test="orgIndexPaths != null and orgIndexPaths.size() > 0">
+                AND (
+                <foreach collection="orgIndexPaths" item="item">
+                    l.org_index_path LIKE CONCAT(#{item},'%') OR
+                </foreach>
+                1 = 2
+                )
+            </if>
+
+            <if test="departmentCodes != null and departmentCodes.size() > 0">
+                AND l.org_index IN
+                <foreach collection="departmentCodes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
+            <if test="endDate != null">
+                AND l.start_date &lt;=#{endDate}
+            </if>
+
+            <if test="startDate != null">
+                AND l.end_date &gt;= #{startDate}
+            </if>
+
+            <if test="status != null">
+                AND l.status = #{status}
+            </if>
+
+            <if test="type != null">
+                AND l."type" = #{type}
+            </if>
+
+            <if test="search != null and search != ''">
+                <choose>
+                    <when test="fromMobile == true">
+                        AND l.person_name LIKE CONCAT('%',#{search},'%')
+                    </when>
+                    <otherwise>
+                        AND (
+                        l.person_name LIKE CONCAT('%',#{search},'%')
+                        OR
+                        l.creator_name LIKE CONCAT('%',#{search},'%')
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </sql>
+
+    <sql id="orderRule">
+        <choose>
+            <when test="orderField != null and orderField != ''">
+                ORDER BY ${orderField}
+                <if test="orderRule != null and orderRule != ''">
+                    ${orderRule}
+                </if>,reported_at DESC
+            </when>
+            <otherwise>
+                ORDER BY l.status ASC, l.reported_at DESC
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="findByConditions" resultMap="LeaveRecordListDTO"
+            parameterType="com.unisinsight.business.dto.request.LeaveRecordQueryReqDTO">
+        SELECT l.*,
+               p.person_url
+        FROM leave_records AS l
+                     INNER JOIN persons AS p ON l.person_no = p.person_no
+        <include refid="conditions"/>
+        <include refid="orderRule"/>
+    </select>
+
+    <select id="checkRepeat" resultType="java.lang.String">
+        SELECT CONCAT(person_name, '(', to_char(start_date, 'yyyy-MM-dd'), ' - ',
+                      to_char(end_date, 'yyyy-MM-dd'), ')')
+        FROM leave_records
+                WHERE status != 4
+                  AND start_date &lt;= #{endDate}
+                  AND end_date &gt;= #{startDate}
+                  AND person_no IN
+        <foreach collection="personNos" open="(" close=")" item="personNo" separator=",">
+            #{personNo}
+        </foreach>
+    </select>
+
+    <select id="findByPersonAtDate" resultMap="LeaveInfoDTO">
+        SELECT type,
+               to_char(start_date, 'yyyy-MM-dd') AS start_date,
+               to_char(end_date, 'yyyy-MM-dd')   AS end_date,
+               reason
+        FROM leave_records
+        WHERE person_no = #{personNo}
+          AND start_date &lt;= #{date}
+          AND end_date &gt;= #{date}
+          AND status = 3
+        ORDER BY id desc
+        LIMIT 1
+    </select>
+
+    <select id="findLeavingPersonsAtDate" resultType="java.lang.String">
+        SELECT person_no
+        FROM leave_records
+                WHERE start_date &lt;= #{date}
+                  AND end_date &gt;= #{date}
+                  AND person_no IN
+        <foreach collection="personNos" open="(" close=")" item="personNo" separator=",">
+            #{personNo}
+        </foreach>
+        AND status = 3
+    </select>
+
+    <select id="findByClasses" resultType="com.unisinsight.business.dto.response.LeaveStudentDTO">
+        SELECT r.type, r.start_date, r.end_date, p.person_no, p.person_name, p.person_url
+        FROM leave_records AS r
+                     INNER JOIN persons AS p ON r.person_no = p.person_no
+                WHERE r.start_date &lt;= #{endDate}
+                  AND r.end_date &gt;= #{startDate}
+                  AND r.org_index IN
+        <foreach collection="classOrgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        <if test="searchKey != null and searchKey != ''">
+            AND (p.person_name LIKE CONCAT('%', #{searchKey}, '%')
+                    OR
+                 p.person_no LIKE CONCAT('%', #{searchKey}, '%'))
+        </if>
+        AND r.status = 3
+    </select>
+
+    <update id="calcLeaveState">
+        UPDATE leave_records
+        SET leave_state =
+                    CASE
+                            WHEN CURRENT_DATE &lt; start_date :: DATE THEN 1
+                            WHEN CURRENT_DATE &gt; end_date :: DATE THEN 3
+                            ELSE 2
+                            END
+        WHERE leave_state IS NULL
+           OR leave_state != 3
+    </update>
+
+    <select id="getStatList" resultMap="LeaveStatListResDTO">
+        SELECT l.id,
+               l.person_no,
+               l.person_name,
+               l.type,
+               l.start_date,
+               l.end_date,
+               l.leave_state,
+               l.org_name,
+               l.school_name,
+               l.creator_name,
+               l.approved_by
+        FROM leave_records l
+                WHERE 1 = 1
+        <choose>
+            <when test="classOrgIndex != null and classOrgIndex != ''">
+                AND l.org_index = #{classOrgIndex}
+            </when>
+            <otherwise>
+                AND l.org_index_path LIKE CONCAT(#{orgIndexPath}, '%')
+            </otherwise>
+        </choose>
+        AND l.status = 3
+        <if test="type != null">
+            AND l.type = #{type}
+        </if>
+        <if test="endDate != null">
+            AND l.start_date &lt;= #{endDate}
+        </if>
+        <if test="startDate != null">
+            AND l.end_date &gt;= #{startDate}
+        </if>
+        <if test="leaveState != null">
+            AND l.leave_state = #{leaveState}
+        </if>
+        <if test="search != null and search != ''">
+            AND (
+                    l.person_no LIKE CONCAT('%', #{search}, '%')
+                            OR
+                    l.person_name LIKE CONCAT('%', #{search}, '%')
+                    )
+        </if>
+
+        <choose>
+            <when test="orderByStateDesc != null and orderByStateDesc == true">
+                ORDER BY l.leave_state DESC
+                       , l.id DESC
+            </when>
+            <otherwise>
+                ORDER BY l.leave_state ASC
+                        , l.id DESC
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

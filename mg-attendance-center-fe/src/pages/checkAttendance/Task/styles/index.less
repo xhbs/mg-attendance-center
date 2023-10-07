@@ -1,0 +1,44 @@
+.mainWapper {
+	height: calc(100% - 32px);
+	margin: 16px;
+}
+.taskManagmentWapper {
+	.linkText {
+		color: #5584ff;
+		text-decoration: underline;
+		cursor: pointer;
+		&:hover {
+			opacity: 0.8;
+		}
+		span {
+			span {
+				text-decoration: underline;
+			}
+		}
+	}
+	.label {
+		&::before {
+			display: inline-block;
+			margin-right: 4px;
+			color: #fc2344;
+			font-size: 14px;
+			font-family: SimSun, sans-serif;
+			line-height: 1;
+			content: '*';
+		}
+	}
+}
+.tree {
+	height: 500px;
+	overflow: auto;
+}
+.treetransfer {
+	:global {
+		.ant-tree-title {
+			color: #000 !important;
+		}
+		.ant-tree-node-content-wrapper.ant-tree-node-selected .ant-tree-title {
+			color: #000 !important;
+		}
+	}
+}

@@ -1,0 +1,93 @@
+
+.toolBarWarper {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 35px;
+    background: #24314a;
+}
+.toolbar {
+    position: relative;
+    // z-index: 1;
+    margin: 0 auto;
+    padding: 5px 0;
+    overflow: hidden;
+    text-align: center;
+    border-bottom:1px solid #000;
+    i {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin: 0 10px;
+        background-repeat: no-repeat;
+        background-position: center;
+        cursor: pointer;
+    }
+    .close {
+        background-image: url("@assets/video/close.png");
+    }
+    .shoot {
+        background-image: url("@assets/video/shoot.png");
+    }
+    .closeSound {
+        background-image: url("@assets/video/close-sound.png");
+    }
+    .openSound {
+        background-image: url("@assets/video/open-sound.png");
+    }
+    .splitScreen {
+        background-image: url("@assets/video/splitscreen.png");
+    }
+    .fullScreen {
+        background-image: url("@assets/video/fullscreen.png");
+    }
+    .play {
+        background-image: url("@assets/video/play.png");
+    }
+    .pause {
+        background-image: url("@assets/video/stop.png");
+    }
+    .closeAll {
+        background-image: url("@assets/video/closeAll.png");
+    }
+}
+
+.playback {
+    i {
+        margin: 0 10px;
+    }
+    .speed {
+        height: 20px;
+        padding: 0 4px;
+        color: #fff;
+        font-size: 12px;
+        line-height: 20px;
+        background-color: #222;
+        border: solid 1px #464646;
+        border-radius: 2px;
+        i {
+            width: 14px;
+            margin: 0;
+        }
+    }
+}
+
+.splitScreenList {
+    padding: 6px 8px !important;
+    span {
+        margin-right: 13px;
+        padding: 1px 4px;
+        color: #939393;
+        font-size: 12px;
+        border: 1px solid #939393;
+        cursor: pointer;
+        &:hover {
+            color: @primaryColor;
+            border-color: @primaryColor;
+        }
+    }
+    span.active {
+        color: @primaryColor;
+        border-color:@primaryColor;
+    }
+}

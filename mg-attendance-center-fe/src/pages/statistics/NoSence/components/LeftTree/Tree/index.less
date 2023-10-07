@@ -1,0 +1,114 @@
+.search {
+    height: 100%;
+    .searchBlock {
+        height: 6%;
+        padding: 16px;
+        :global {
+            .ant-input-affix-wrapper {
+                .ant-input {
+                    height:32px;
+                    border:1px solid rgba(85,132,255,1);
+                    border-radius:4px;
+                    opacity:0.52;
+                }
+                .ant-input-suffix {
+                    right: 13px;
+                }
+            }
+        }
+    }
+    .treeStructure {
+        height: 92% !important;
+        margin: 5px 16px 16px 9px;
+        overflow: auto;
+        .tree_name {
+            color: #f50;
+        }
+        :global {
+            ul {
+                li {
+                    color: white;
+                    .ant-tree-node-content-wrapper {
+                        width: 100%;
+                        margin-left: -22px;
+                        color: white;
+                        .ant-tree-iconEle {
+                            display: inline-block;
+                            width: 18px;
+                            height: 18px;
+                            margin: 0 7px 0 5px;
+                            img {
+                                width: 100%;
+                                height: 100%;
+                                margin-top: -6px;
+                            }
+                        }
+                        &:hover::before {
+                            background: #2C57A6;
+                            opacity: 0.32;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+    
+.selectedNode{
+    > span:nth-child(2)::before{ 
+        background:#0090ff !important;
+    }
+}
+.qiangIcon {
+    display: inline-block;
+    width: 20px;
+    height: 40px;
+    vertical-align: middle;
+    background: left center url('../images/qiangBlue.png')
+        no-repeat;
+    visibility: visible !important;
+}
+.qiuIcon {
+    display: inline-block;
+    width: 23px;
+    height: 40px;
+    vertical-align: middle;
+    background: left center url('../images/qiuBlue.png')
+        no-repeat;
+    visibility: visible !important;
+}
+.banqiuIcon {
+    display: inline-block;
+    width: 23px;
+    height: 40px;
+    vertical-align: middle;
+    background: left center url('../images/banqiu.png') no-repeat;
+    visibility: visible !important;
+}
+.qiangIconGray {
+    display: inline-block;
+    width: 20px;
+    height: 40px;
+    vertical-align: middle;
+    background: left center url('../images/qiangGray.png')
+        no-repeat;
+    visibility: visible !important;
+}
+.qiuIconGray {
+    display: inline-block;
+    width: 23px;
+    height: 40px;
+    vertical-align: middle;
+    background: left center url('../images/qiuGray.png')
+        no-repeat;
+    visibility: visible !important;
+}
+.banqiuIconGray {
+    display: inline-block;
+    width: 23px;
+    height: 40px;
+    vertical-align: middle;
+    background: left center url('../images/banqiuGray.png') no-repeat;
+    visibility: visible !important;
+}

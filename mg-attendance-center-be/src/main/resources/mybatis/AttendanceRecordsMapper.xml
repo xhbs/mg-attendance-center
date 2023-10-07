@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.AttendanceRecordsMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.FeelAttendanceRecordsDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="attendance_date" jdbcType="DATE" property="attendanceDate"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="result_id" jdbcType="INTEGER" property="resultId"/>
+        <result column="leave_record_id" jdbcType="INTEGER" property="leaveRecordId"/>
+        <result column="match_image" jdbcType="VARCHAR" property="matchImage"/>
+        <result column="match_result" jdbcType="INTEGER" property="matchResult"/>
+        <result column="comment" jdbcType="VARCHAR" property="comment"/>
+        <result column="absence_reason" jdbcType="VARCHAR" property="absenceReason"/>
+        <result column="location" jdbcType="VARCHAR" property="location"/>
+        <result column="place_name" jdbcType="VARCHAR" property="placeName"/>
+    </resultMap>
+
+    <select id="insertFeel" parameterType="com.unisinsight.business.model.FeelAttendanceRecordsDO" resultType="java.lang.Integer">
+        INSERT INTO feel_attendance_records(attendance_date,person_no,result_id,leave_record_id,match_image,
+        match_result,comment,absence_reason,location,place_name)
+        VALUES (#{attendanceDate},#{personNo},#{resultId},#{leaveRecordId},#{matchImage},
+        #{matchResult},#{comment},#{absenceReason},#{location},#{placeName})
+        RETURNING id
+    </select>
+
+    <select id="findByResultId" resultType="com.unisinsight.business.model.FeelAttendanceRecordsDO">
+        SELECT *
+        FROM feel_attendance_records
+        WHERE result_id = #{id}
+        AND person_no = #{personNo}
+    </select>
+    <select id="findByPerson" resultType="com.unisinsight.business.model.FeelAttendanceRecordsDO">
+        SELECT f.*
+        FROM feel_attendance_records f
+        LEFT JOIN feel_task_relations r ON f.id = r.feel_id
+        WHERE r.task_id = #{id}
+        AND f.attendance_date = #{day}
+        AND person_no = #{personNo}
+    </select>
+    <select id="findByTaskId" resultType="com.unisinsight.business.model.FeelAttendanceRecordsDO">
+        SELECT f.*
+        FROM feel_attendance_records f
+        LEFT JOIN feel_task_relations r ON f.id = r.feel_id
+        WHERE r.task_id = #{id}
+        AND f.attendance_date = #{day}
+    </select>
+</mapper>

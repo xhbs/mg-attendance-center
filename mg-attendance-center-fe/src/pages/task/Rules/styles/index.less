@@ -1,0 +1,26 @@
+@import '../../../../theme.less';
+
+.rulesWapper {
+    .linkText {
+        color: @primaryColor;
+        text-decoration: underline;
+        cursor: pointer;
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+}
+.ruleTimeModal {
+    :global {
+        .hz-layout-grid .hz-row .hz-col-11 {
+            line-height: 34px;
+        }
+    }
+}
+.detailPageWapper {
+    :global {
+        .ant-time-picker-input {
+            line-height: 0;
+        }
+    }
+}

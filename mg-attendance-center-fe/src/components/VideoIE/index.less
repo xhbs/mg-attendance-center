@@ -1,0 +1,282 @@
+@primaryColor:#ec1c24;
+
+.videoWindow {
+    height: 100%;
+    border: 1px solid black;
+    
+    background: #323232;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.treeStructure{
+    height: 800px;
+    :golbal(.ant-tabs) {
+        height: 500px;
+    }
+}
+.container {
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+}
+// .background {
+//     background: url("./images/lodaingpage.png") no-repeat;
+//     background-size: 100% 100%;
+//     width: 100%;
+//     height: 100%;
+//     margin-bottom: 30px;
+//     position: absolute;
+//     z-index: 0;
+//     div {
+//         background: url("./images/loadingtip.png") center no-repeat;
+//         width: 100%;
+//         height: 100%;
+//     }
+// }
+/*工具栏 包括分屏，暂停，声音，全屏等*/
+.toolbar {
+    position: relative;
+    // z-index: 1;
+    background: #323232;
+    height: 35px;
+    border-bottom:1px solid #000;
+    padding: 5px 0;
+    overflow: hidden;
+    margin: 0 auto;
+    text-align: center;
+    .fullScreen, .splitScreen {
+        float: left;
+    }
+    i {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        cursor: pointer;
+        margin: 0 17px;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    .close {
+        background-image: url("./images/close.png");
+        &:active {
+            background-image: url("./images/close-active.png");
+        }
+    }
+    .shoot {
+        background-image: url("./images/shoot.png");
+        &:active {
+            background-image: url("./images/shoot-active.png");
+        }
+    }
+    .closeSound {
+        background-image: url("./images/close-sound.png");
+    }
+    .openSound {
+        background-image: url("./images/open-sound.png");
+    }
+    .splitScreen {
+        background-image: url("./images/splitscreen.png");
+    }
+    .fullScreen {
+        background-image: url("./images/fullscreen.png");
+    }
+    .play {
+        background-image: url("./images/play.png");
+    }
+    .pause {
+        background-image: url("./images/stop.png");
+    }
+    .frame {
+        background-image: url("./images/frame.png");
+    }
+    .download {
+        background-image: url("./images/download.png");
+    }
+    .closeAll {
+        background-image: url("./images/closeAll.png");
+    }
+}
+
+.playback {
+    i {
+        margin: 0 10px;
+    }
+    .speed {
+        color: #fff;
+        line-height: 20px;
+        height: 20px;
+        padding: 0 4px;
+        font-size: 12px;
+        background-color: #222222;
+        border-radius: 2px;
+        border: solid 1px #464646;
+        i {
+            width: 14px;
+            margin: 0px;
+        }
+    }
+}
+
+// :global(.ant-popover-inner-content) {
+//     padding: 4px;
+// }
+
+// :global(.ocxModal) {
+//     top:64px !important;
+// }
+
+/*分屏按钮列表*/
+.splitScreenList {
+    span {
+        padding: 1px 4px;
+        color: #939393;
+        border: 1px solid #939393;
+        font-size: 12px;
+        margin-right: 13px;
+        cursor: pointer;
+        &:hover {
+            color: @primaryColor;
+            border-color: @primaryColor;
+        }
+    }
+    span.active {
+        color: @primaryColor;
+        border-color:@primaryColor;
+    }
+}
+
+/*下载框*/
+.downLoadModal {
+    :global {
+        .ant-modal-content {
+            color: #232323;
+            .ant-modal-header {
+                margin: 0 12px;
+                padding: 0 10px;
+                line-height: 35px;
+                height: 35px;
+                background-color: #fff;
+                .ant-modal-title {
+                    color: #232323;
+                    span {
+                        border-left: 3px solid @primaryColor;
+                        padding-left: 5px;
+                    }
+                }
+            }
+            .ant-modal-close-x {
+                color: #232323;
+            }
+        }
+    }
+    .content {
+        :global {
+            /*侧边栏*/
+            .ant-tabs-bar {
+                border: 1px solid #c0c0c0;
+                width: 143px;
+                border-radius: 4px;
+                margin-right: 0;
+                height: 438px;
+                overflow: hidden;
+                .ant-tabs-ink-bar {
+                    width: 0px;
+                }
+                .ant-tabs-tab {
+                    margin-bottom: 0px;
+                    text-align: left;
+                    padding: 8px 12px;
+                    span {
+                        padding-left: 20px;
+                    }
+                    :local {
+                        .downloading {
+                            background: url("./images/downloadz.png")
+                                no-repeat;
+                        }
+                        .done {
+                            background: url("./images/done.png")
+                                no-repeat;
+                        }
+                        .delete {
+                            background: url("./images/delete.png")
+                                no-repeat;
+                        }
+                    }
+                }
+                .ant-tabs-tab-active {
+                    background-color: #e7f5ff;
+                }
+            }
+            .ant-tabs-content {
+                border-left: none;
+                .ant-table-thead {
+                    text-align: center;
+                }
+            }
+        }
+
+        /*下载进度条*/
+        .progress {
+            height: 7px;
+            width: 100px;
+            background-color: #e7e7e7;
+            .normal {
+                height: 100%;
+                background-color: #2080da;
+            }
+            .error {
+                height: 100%;
+                background-color: #e53939;
+            }
+        }
+        .progressText {
+            font-size: 12px;
+            color: #a8a8a8;
+        }
+        .loading {
+            display: inline-block;
+            padding-left: 15px;
+            color: #2080da;
+            background: url("./images/loading.png") left center
+                no-repeat;
+        }
+        .error {
+            display: inline-block;
+            padding-left: 15px;
+            color: #e53939;
+            background: url("./images/error.png") left center
+                no-repeat;
+        }
+        .expendLoad {
+            display: inline-block;
+            padding-left: 15px;
+            color: #2080da;
+            background: url("./images/expendLoad.png") left center
+                no-repeat;
+        }
+        .unstart {
+            display: inline-block;
+            padding-left: 15px;
+            color: #2080da;
+            background: url("./images/unstart.png") left center
+                no-repeat;
+        }
+        .downloaded {
+            display: inline-block;
+            color: #15c100;
+            padding-left: 15px;
+            background: url("./images/downloaded.png") left center
+                no-repeat;
+        }
+    }
+
+    .buttons {
+        button {
+            margin-right: 10px;
+            width: 50-18+50px;
+            margin-bottom: 10px;
+        }
+    }
+}

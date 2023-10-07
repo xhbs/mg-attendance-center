@@ -1,0 +1,95 @@
+.iconDiv {
+    position: absolute;
+    width: 40px;
+    height: 100px;
+    z-index: 9999;
+    line-height: 120px;
+    top: 220px;
+}
+.detailWapper {
+    padding-right: 10px;
+    .item {
+        position: relative;
+        margin: 15px 0;
+        &:first-child {
+            margin-top: 0;
+        }
+        .itemContent {
+            display: flex;
+            margin-top: 10px;
+            background-color: #fafafa;
+            .itemList {
+                width: calc(~'100% - 150px');
+                margin-right: 20px;
+            }
+            .itemImg {
+                position: relative;
+                width: 130px;
+                height: 160px;
+                margin-right: 16px;
+                display: inline-block;
+                vertical-align: text-top;
+                overflow: hidden;
+                img {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                }
+            }
+            .itemTable {
+                :global {
+                    .hz-row {
+                        margin: 0;
+                    }
+                    .hz-col-5, .hz-col-7, .hz-col-19 {
+                        border: 1px solid #DCDEE3;
+                        color: #555;
+                    }
+                }
+                .itemLabel {
+                    text-align: left;
+                    background: #f7f7f7;
+                }
+            }
+            :global {
+                .hz-layout-grid {
+                    padding: 0;
+                }
+            }
+        }
+        .mark {
+            text-align: center;
+            width: 100px;
+            height: 34px;
+            line-height: 30px;
+            transform: rotate(30deg);
+            font-size: 18px;
+            color: #FA6400;
+            letter-spacing: 8px;
+            font-weight: 600;
+            border: 2px solid #FA6400;
+            position: absolute;
+            top: 30px;
+            right: 0;
+        }
+    }
+    .itemLabel {
+        display: inline-block;
+        width: 100px;
+        text-align: right;
+        color: #666;
+    }
+    li {
+        padding: 5px 0;
+        display: flex;
+        .itemLabel {
+            margin-right: 10px;
+            width: 60px;
+            text-align: left;
+        }
+        div {
+            max-width: calc(100% - 80px);
+        }
+    }
+}

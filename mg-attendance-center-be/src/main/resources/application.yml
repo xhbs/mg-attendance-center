@@ -1,0 +1,184 @@
+server:
+  port: 14208
+logging:
+  level:
+    root: info
+    com.nmj.business.mapper: info
+    org.apache.kafka: error
+    org:
+      springframework:
+        kafka: error
+  config: classpath:logback-test.xml
+spring:
+#  profiles:
+#    active: dev
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+  main:
+    allow-bean-definition-overriding: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+  flyway:
+    baseline-on-migrate: true
+    validate-on-migrate: false
+    enabled: true
+    schemas: public
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://127.0.0.1:40093/biz_attendance
+    username: pgsql
+    password: pgsql
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 10
+      pool-name: HikariPool-biz-scene
+      auto-commit: true
+  kafka:
+    bootstrap-servers: 127.0.0.1:19090
+    producer:
+      retries: 1
+      batch-size: 16384
+      buffer-memory: 33554432
+    consumer:
+      group-id: consumer-attendance-one
+      auto-commit-interval: 5000
+      auto-offset-reset: latest
+      enable-auto-commit: true
+      max-poll-records: 10
+    listener:
+      missing-topics-fatal: false
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:mybatis/*Mapper.xml
+  typeAliasesPackage: com.nmj.**.model
+  type-handlers-package: com/nmj/business/common/handler
+
+mapper:
+  mappers: com.nmj.framework.common.base.Mapper
+  not-empty: false
+  identity: postgresql
+  enum-as-simple-type: true
+
+# 依赖服务配置
+service:
+  mg-om: # 对象管理
+    base-url: http://127.0.0.1:14548
+  mg-fms: # 文件服务
+    base-url: http://127.0.0.1
+    register-port: 14177
+    visit-port: 14178
+  mg-egs: # 门禁服务
+    base-url: http://127.0.0.1:16502
+  bss-uuv: # uuv
+    base-url: http://127.0.0.1:11101
+  bss-udm: # 设备管理
+    base-url: http://127.0.0.1:11120
+  bss-dictionary: # 字典服务
+    base-url: http://127.0.0.1:11134
+  cms: # cms
+    base-url: http://127.0.0.1:8091
+  mda: # mda
+    base-url: http://127.0.0.1:2530
+  viid: # viid
+    face-disposition: http://127.0.0.1:8093 # 人员布控服务
+  ynjy: # 云南教育
+    base-url: https://ssoauth.ynjy.cn
+  eco-dcg:
+    base-url: http://eco-dcg:80
+
+dbServer:
+  ip: 127.0.0.1
+  port: 40093
+
+nmj:
+  error-code-prefix: "01010" # 错误码前缀 http://127.0.0.17:8000/helper/document/344/2404
+  log:
+    url: http://127.0.0.1:11102 # 日志服务地址
+    enableLog: true # 是否启记录日志：false(关闭日志记录)、true（开启日志记录
+
+cron: # 定时任务配置
+  DailyAttendanceAbsenceJob: '0 0 1 * * ?' # 日常考勤 - 生成缺勤结果，每天 01:00 触发
+  DailyAttendanceAlertJob: '0 0 8 * * FRI' # 日常考勤 - 提醒班主任进行有感考勤，每周五 08:00 触发
+  DailyAttendanceHighLvlInputDataJob: '0 0 4 * * ?' # 日常考勤 - 生成高级节点统计数据，每天 04:00 触发
+  DailyAttendancePeriodStuInputDataJob: '0 0 2 * * ?' # 日常考勤 - 生成学生统计数据，每天 02:00 触发
+  PracticeAttendanceAbsenceJob: '0 30 1 * * ?' # 实习点名 - 生成缺勤结果缺勤结果，每天 01:30 触发
+  SpotAttendanceAbsenceJob: '0 20 1 * * ?' # 抽查考勤 - 生成缺勤结果，每天 01:20 触发
+  SpotAttendanceStatJob: '0 0 2 * * ?' # 抽查考勤 - 生成抽查考勤统计，每天 02:00 触发
+  SpotCheckTaskAlertJob: '0 0 8 * * ?' # 抽查考勤 - 发送短信，每天 08:00 触发
+  UpdateLeaveStateJob: '0 10 0 * * ?' # 计算请假状态，每天 00:08 触发
+  UpdatePracticeStatusJob: '0 12 0 * * ?' # 计算实习状态，每天 00:10 触发
+  UpdateTaskStateJob: '0 15 0 * * ?' # 计算抽查任务状态，每天 00:15 触发
+  SubsidClearDataDataJob: '0 0 4 * * ?' # 清除资助比对数据，每天 04:00 触发
+  OrganizationSyncJob: '0 15 0 * * ?' # 缓存 - 刷新组织缓存，每天 00:15 触发
+  PersonSyncJob: '0 20 0 * * ?' # 缓存 - 刷新考勤人员缓存，每天 00:20 触发
+  RefreshChannelCacheJob: '0 0 3 * * ?' # 缓存 - 刷新通道缓存，每天 03:00 触发
+
+ynjy:
+  client_id: aaaa
+  client_secret: bbbb
+
+sms-tpl: # 给班主任发送短信模板
+  daily-attendance: '{user_name}老师您好，{students}本周未完成考勤，请尽快完成本周考勤'
+  spot-check-task: '{user_name}老师您好，请在{date}完成以下同学的抽查考勤：{students}'
+
+# 一些考勤结果处理相关的调整参数
+attendance-result-handler:
+  disposition-event-interval-limit: 60000 # 布控打卡频率限制，单位毫秒
+  result-handle-max-interval-days: 7 # 处理多少天内的数据
+  identity-topic-consumer-count: 2 # 布控kafka消费线程数
+  disposition-topic-consumer-count: 1 # 布控kafka消费线程数
+  egs-topic-consumer-count: 1 # 门禁事件消费线程数
+
+# 考勤数据导出配置参数
+attendance-result-export:
+  template:
+    personno-column: 身份证件号 # 学生编号所在列
+    max-person-count: 1000 # 最多一次支持导入多少学生
+
+disposition:
+  similarityDegree: 0.7 # 布控告警相似度阈值
+
+face-macth:
+  algorithm-vendor: aaa # 算法厂商
+  similarity-threshold: 50 # 人脸比对相似度阈值
+
+excel-export:
+  max-size: 100000 # excel导出默认最大行数
+
+#数据留存天数
+retention:
+  subsid:
+    common: 30
+    stu-list: 360
+url:
+  viid-face-static: http://127.0.0.1:8089
+  viid-face-disposition: http://127.0.0.1:8093
+  image-mda: http://127.0.0.1:2530
+  person-base: http://127.0.0.1:14560
+  viid-face-snap: 127.0.0.1:12454
+  object-manage: http://127.0.0.1:14548
+  dynamic-form: http://127.0.0.1:10082
+
+student:
+  image:
+    ip: '127.0.0.1'
+    port: 22
+    userName: root
+    password: '1111111+'
+    path: '/schoolphoto/'
+    splitStr: '1111111/'
+ziguang:
+  mysql:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://127.0.0.1:33061/aaaaa?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    username: aaaaa
+    password: aaaaa
+  object-manage:
+    driverClassName: org.postgresql.Driver
+    jdbcUrl: jdbc:postgresql://127.0.0.1:5432/aaaaa
+    username: pgsql
+    password: pgsql

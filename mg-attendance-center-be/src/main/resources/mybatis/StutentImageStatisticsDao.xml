@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.StutentImageStatisticsDao">
+
+    <resultMap type="com.unisinsight.business.model.StutentImageStatistics" id="StutentImageStatisticsMap">
+        <result property="school" column="school" jdbcType="VARCHAR"/>
+        <result property="count" column="count" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+</mapper>
+

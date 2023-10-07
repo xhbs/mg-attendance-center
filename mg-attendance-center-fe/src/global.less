@@ -1,0 +1,124 @@
+@import './theme.less';
+@import '~@hz-design/base/es/index';
+@import '~@hz-design/base/es/plugin/vw.less';
+
+html,
+body,
+#root {
+	min-width: 1366px;
+	height: 100%;
+	min-height: 680px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	font-size: 14px;
+	background: #ececec;
+}
+.dateDropdown {
+	:global {
+		.ant-calendar-range.ant-calendar-time .ant-calendar-footer .ant-calendar-time-picker-btn {
+			display: none;
+		}
+	}
+}
+:global {
+	.ant-calendar-picker-clear,
+	.ant-input-clear-icon,
+	.ant-select-clear-icon {
+		color: #ccc !important;
+		&:hover {
+			color: #666 !important;
+		}
+	}
+	.hz-base-style .ant-tree-title {
+		color: #fff;
+	}
+	.hz-base-style
+		.ant-tree
+		li
+		.ant-tree-node-content-wrapper.ant-tree-node-selected
+		.ant-tree-title {
+		color: #fff;
+	}
+	.ant-tooltip-inner {
+		word-break: break-all;
+	}
+	.hz-table-ellipsis-wrapper {
+		div {
+			overflow-x: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			vertical-align: bottom;
+			word-break: keep-all;
+		}
+	}
+	.biz-scene-components-import-modal .failedText {
+		display: none;
+	}
+	.biz-scene-components-import-modal .successText {
+		display: none;
+	}
+	form .ant-mentions,
+	form textarea.ant-input {
+		word-break: keep-all;
+	}
+}
+
+body {
+	margin: 0;
+}
+.hz-mgbiz-date-group,
+.hz-mgbiz-date-group-date-picker .anticon {
+	line-height: 40px;
+}
+.ists-create-drawer-main {
+	.ists-create-drawer-header {
+		margin-bottom: 0;
+		border-bottom: 4px solid #f0f2f5;
+	}
+	.hz-layout-vertical {
+		border-radius: 8px;
+	}
+	.hz-layout-vertical-footer {
+		margin-top: 0;
+		border-top: 4px solid #f0f2f5;
+	}
+}
+// 重写滚动条样式
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+::-webkit-scrollbar-button {
+	display: none;
+}
+
+::-webkit-scrollbar-thumb {
+	// background-color: #999;
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 19px;
+}
+
+.ugis-marker {
+	display: inline-block;
+	max-width: 300px !important;
+	.mapboxgl-popup-content {
+		border: none !important;
+		box-shadow: none !important;
+	}
+
+	.mapboxgl-popup-content,
+	.mapboxgl-popup-tip {
+		background: inherit !important;
+		border-top-color: rgba(0, 42, 31, 0) !important;
+	}
+
+	.mapboxgl-popup-close-button {
+		display: none !important;
+	}
+}
+
+.ant-progress-show-info .ant-progress-outer {
+	margin-right: calc(-2em - 20px);
+	padding-right: calc(2em + 20px);
+}

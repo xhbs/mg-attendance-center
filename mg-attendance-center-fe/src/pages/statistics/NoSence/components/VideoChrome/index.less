@@ -1,0 +1,72 @@
+.videoWapper {
+    width: 100%;
+    height: calc(100% - 35px);
+    overflow: hidden;
+    background: #141e31 url('@assets/video/loadingtip.png') center no-repeat;
+    .videoItemBox {
+        text-align: right;
+    }
+    .videoItem {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border: 1px solid #354b7b;
+      &.videoItemEmpty {
+        background: #141e31 url('@assets/video/loadingtip.png') center no-repeat;
+        background-size: 50%;
+      }
+      &.isSelected {
+        border: solid 1px #9c3434;
+      }
+      .videoTools {
+        position: absolute;
+        top: -24px;
+        z-index: 999;
+        width: 100%;
+        height: 24px;
+        padding: 0 10px;
+        color: #ccc;
+        background: #ffffff4d;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      &:hover {
+        .videoTools {
+          top: 0;
+        }
+      }
+    }
+    i {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin: 0 10px;
+      background-repeat: no-repeat;
+      background-position: center;
+      cursor: pointer;
+    }
+    .closeIcon {
+        background-image: url("@assets/video/closeAll.png");
+    }
+    .shootIcon {
+        background-image: url("@assets/video/shoot.png");
+    }
+
+    :global{
+      .player-video-instance{
+        width: 100%;
+        height: 100%;
+      }
+      .player-video-warp {
+        background: #141e31;
+      }
+  
+      .player{
+        min-width: 100% !important;
+        text-align: center;
+      }
+    }
+}
+  

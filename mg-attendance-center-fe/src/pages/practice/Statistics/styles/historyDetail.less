@@ -1,0 +1,101 @@
+
+.detailWapper {
+    padding-right: 10px;
+    .infoWapper {
+        // display: flex;
+        
+        :global {
+            .hz-row {
+                margin: 0;
+            }
+            .hz-col-3, .hz-col-4, .hz-col-6, .hz-col-7 {
+                border: 1px solid #DCDEE3;
+                color: #555;
+                padding: 4px;
+            }
+            .hz-col-3, .hz-col-4 {
+                border-right: none;
+            }
+        }
+        li {
+            &:nth-child(2n-1) {
+                background-color: #f7f7f7;
+            }
+        }
+    }
+    .graphicsWapper {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        .left {
+            width: 60%;
+        }
+        .right {
+            width: calc(40% - 15px);
+        }
+        .graphicLeft, .graphicRight {
+            background-color: #f7f7f7;
+            padding: 10px;
+            margin: 15px 0;
+            height: 200px;
+        }
+        .pieWrap {
+            height: 100%;
+        }
+    }
+    
+    .datesList {
+        width: 422px;
+        display: flex;
+        flex-wrap: wrap;
+        color: #999;
+        .title {
+            width: 60px;
+            line-height: 50px;
+            text-align: center;
+        }
+        .date {
+            margin: 5px 10px;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 100px;
+        }
+        .normal {
+            background-color: #fff;
+            border: 1px solid #E8E9EC;
+        }
+        .blue {
+            background-color: #5584ff;
+            color: #fff;
+        }
+        .red {
+            background-color: #FC2344;
+            color: #fff;
+        }
+        .green {
+            background-color: #48AE16;
+            color: #fff;
+        }
+        .yellow {
+            background-color: #F7B500;
+            color: #fff;
+        }
+        .colorItem {
+            margin: 0 25px 0 0;
+            span {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                vertical-align: middle;
+            }
+        }
+    }
+
+    :global {
+        .hz-table-fixed .ant-table-small .ant-table-content > .ant-table-scroll > .ant-table-header > table > .ant-table-thead > tr > th:first-child {
+            padding-left: 8px !important;
+        }
+    }
+}

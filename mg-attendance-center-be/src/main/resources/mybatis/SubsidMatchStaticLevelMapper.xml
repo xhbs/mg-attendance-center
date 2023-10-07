@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.SubsidMatchStaticLevelMapper">
+  <resultMap id="BaseResultMap" type="com.unisinsight.business.model.SubsidMatchStaticLevelDO">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="org_index" jdbcType="VARCHAR" property="orgIndex" />
+    <result column="org_name" jdbcType="VARCHAR" property="orgName" />
+    <result column="org_parent_index" jdbcType="VARCHAR" property="orgParentIndex" />
+    <result column="student_num" jdbcType="INTEGER" property="studentNum" />
+    <result column="sub_num" jdbcType="INTEGER" property="subNum" />
+    <result column="match_pass_num" jdbcType="INTEGER" property="matchPassNum" />
+    <result column="match_no_pass_num" jdbcType="INTEGER" property="matchNoPassNum" />
+    <result column="subsid_rule_id" jdbcType="INTEGER" property="subsidRuleId" />
+    <result column="sub_type" jdbcType="SMALLINT" property="subType" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+
+  <select id="selectCountLevelRecords" resultType="com.unisinsight.business.dto.SubdisLevelResultCountDTO">
+    select
+      org_parent_index as orgParentIndex,
+        COALESCE(sum(student_num),0) as studentNum,
+        COALESCE(sum(match_pass_num),0) as matchPassNum,
+        COALESCE(sum(match_no_pass_num ),0) as matchNoPassNum
+    from subsid_match_static_level
+    <where>
+      <if test="subsidRuleId != null">
+        subsid_rule_id =  #{subsidRuleId}
+      </if>
+      <if test="orgParentIndexList != null and orgParentIndexList.size > 0">
+        and org_parent_index in
+        <foreach collection="orgParentIndexList" item="item" separator="," open="(" close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+    group by org_parent_index
+  </select>
+
+
+  <sql id="base_sql">
+    subsid_match_static_level.id,
+    subsid_match_static_level.org_index,
+    subsid_match_static_level.org_name,
+    subsid_match_static_level.org_parent_index,
+    subsid_match_static_level.student_num,
+    subsid_match_static_level.sub_num,
+    subsid_match_static_level.match_pass_num,
+    subsid_match_static_level.match_no_pass_num,
+    subsid_match_static_level.subsid_rule_id,
+    subsid_match_static_level.sub_type,
+    subsid_match_static_level.create_time
+  </sql>
+
+  <select id="selectSubsidLevelList" resultMap="BaseResultMap">
+      select
+        <include refid="base_sql"/>
+      from subsid_match_static_level subsid_match_static_level
+      left join organizations organizations on organizations.org_index = subsid_match_static_level.org_index
+      <where>
+        <if test="subsidRuleId != null">
+          subsid_match_static_level.subsid_rule_id =  #{subsidRuleId}
+        </if>
+        <if test="orgParentIndex != null">
+          and subsid_match_static_level.org_parent_index =  #{orgParentIndex}
+        </if>
+        <if test="orgIndex != null">
+          and   subsid_match_static_level.org_index =  #{orgIndex}
+        </if>
+        <if test="orgName != null">
+          and subsid_match_static_level.org_name like CONCAT('%',#{orgName},'%')
+        </if>
+      </where>
+      order by organizations.display_order asc
+  </select>
+
+
+  <select id="selectSubsidLevelListByHandle" resultMap="BaseResultMap">
+    select
+    <include refid="base_sql"/>
+    from subsid_match_static_level subsid_match_static_level
+    left join organizations organizations on organizations.org_index = subsid_match_static_level.org_index
+    <where>
+      <if test="subsidRuleId != null">
+        subsid_match_static_level.subsid_rule_id =  #{subsidRuleId}
+      </if>
+      <if test="orgParentIndex != null">
+        and subsid_match_static_level.org_parent_index =  #{orgParentIndex}
+      </if>
+      <if test="orgIndex != null">
+        and   subsid_match_static_level.org_index =  #{orgIndex}
+      </if>
+      <if test="orgName != null">
+        and subsid_match_static_level.org_name like CONCAT('%',#{orgName},'%')
+      </if>
+    </where>
+    order by organizations.display_order asc
+    LIMIT #{limit} OFFSET #{offset}
+
+  </select>
+
+
+    <select id="selectTotal"  resultType="Integer">
+      select
+        count(*)
+      from subsid_match_static_level subsid_match_static_level
+      <where>
+        <if test="subsidRuleId != null">
+          subsid_match_static_level.subsid_rule_id =  #{subsidRuleId}
+        </if>
+        <if test="orgParentIndex != null">
+          and subsid_match_static_level.org_parent_index =  #{orgParentIndex}
+        </if>
+        <if test="orgIndex != null">
+          and   subsid_match_static_level.org_index =  #{orgIndex}
+        </if>
+        <if test="orgName != null">
+          and subsid_match_static_level.org_name like CONCAT('%',#{orgName},'%')
+        </if>
+      </where>
+
+    </select>
+
+
+</mapper>

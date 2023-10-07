@@ -1,0 +1,60 @@
+.detailWapper {
+    padding-right: 10px;
+    .mark {
+        text-align: center;
+        width: 100px;
+        height: 34px;
+        line-height: 30px;
+        transform: rotate(30deg);
+        font-size: 18px;
+        color: #FA6400;
+        letter-spacing: 8px;
+        font-weight: 600;
+        border: 2px solid #FA6400;
+        position: absolute;
+        top: 15px;
+        right: 0;
+    }
+    .item {
+        position: relative;
+        margin: 15px 0;
+        &:first-child {
+            margin-top: 0;
+        }
+        
+        :global {
+            .hz-layout-grid {
+                padding: 0 16px;
+            }
+        }
+    }
+    li {
+        display: flex;
+        padding: 5px 0;
+        .itemLabel {
+            margin-right: 10px;
+            width: 100px;
+            text-align: right;
+            color: #999;
+        }
+        div {
+            max-width: calc(100% - 110px);
+        }
+        .box {
+            width: calc(100% - 100px);
+            border: 1px solid #eaeaea;
+            border-radius: 4px;
+            height: 140px;
+            overflow-y: scroll;
+            span {
+                margin: 0 10px;
+            }
+        }
+    }
+
+    :global {
+        .hz-table-fixed .ant-table-small .ant-table-content > .ant-table-scroll > .ant-table-header > table > .ant-table-thead > tr > th:first-child {
+            padding-left: 8px !important;
+        }
+    }
+}

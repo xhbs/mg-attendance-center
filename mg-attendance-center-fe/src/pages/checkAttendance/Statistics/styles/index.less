@@ -1,0 +1,25 @@
+@import '../../../../theme.less';
+.linkText {
+    color: @primaryColor;
+    text-decoration: underline;
+    cursor: pointer;
+    &:hover {
+        opacity: 0.8;
+    }
+}
+.mainWapper {
+  // height: calc(100% - 32px);
+  height: 100%;
+  // margin: 16px;
+}
+
+.tjWapper {
+  :global {
+    .hz-layout-vertical-footer {
+      display: none;
+    }
+    .hz-layout-vertical-body {
+      background: none;
+    }
+  }
+}

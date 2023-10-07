@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.AppealPersonMapper">
+    <resultMap id="AppealStatListResDTO" type="com.unisinsight.business.dto.response.AppealStatListResDTO">
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+        <result column="total" jdbcType="INTEGER" property="total"/>
+        <result column="not_approval_num" jdbcType="INTEGER" property="notApprovalNum"/>
+        <result column="passed_num" jdbcType="INTEGER" property="passedNum"/>
+        <result column="rejected_num" jdbcType="INTEGER" property="rejectedNum"/>
+    </resultMap>
+
+    <resultMap id="AppealPersonListResDTO" type="com.unisinsight.business.dto.response.AppealPersonListResDTO">
+        <result column="appeal_record_id" jdbcType="INTEGER" property="appealRecordId"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="class_name" jdbcType="VARCHAR" property="className"/>
+        <result column="attendance_date_range" jdbcType="VARCHAR" property="attendanceDateRange"/>
+        <result column="reported_at" jdbcType="VARCHAR" property="reportedAt"/>
+    </resultMap>
+
+    <select id="findPersonNosOfRecordId" resultType="java.lang.String">
+        SELECT person_no
+        FROM appeal_persons
+        WHERE appeal_record_id = #{recordId}
+    </select>
+
+    <select id="statByOrg" resultMap="AppealStatListResDTO">
+        <foreach collection="orgIndexPaths" item="item" separator="UNION ALL">
+            SELECT COALESCE(COUNT(ap.person_no), 0)                           AS total,
+                   COALESCE(SUM(case when r.status = 2 THEN 1 ELSE 0 END), 0) AS not_approval_num,
+                   COALESCE(SUM(case when r.status = 3 THEN 1 ELSE 0 END), 0) AS passed_num,
+                   COALESCE(SUM(case when r.status = 4 THEN 1 ELSE 0 END), 0) AS rejected_num
+            FROM appeal_persons ap
+                         INNER JOIN appeal_records r ON ap.appeal_record_id = r.id
+                    WHERE r.org_index_path LIKE CONCAT(#{item}, '%')
+            <if test="endDate != null">
+                AND r.start_date &lt;= #{endDate}
+            </if>
+
+            <if test="startDate != null">
+                AND r.end_date &gt;= #{startDate}
+            </if>
+        </foreach>
+    </select>
+
+    <select id="statByClass" resultMap="AppealStatListResDTO">
+        <foreach collection="orgIndexes" item="item" separator="UNION ALL">
+            SELECT COALESCE(COUNT(ap.person_no), 0)                           AS total,
+                   COALESCE(SUM(case when r.status = 2 THEN 1 ELSE 0 END), 0) AS not_approval_num,
+                   COALESCE(SUM(case when r.status = 3 THEN 1 ELSE 0 END), 0) AS passed_num,
+                   COALESCE(SUM(case when r.status = 4 THEN 1 ELSE 0 END), 0) AS rejected_num
+            FROM appeal_persons ap
+                         INNER JOIN persons p on p.person_no = ap.person_no
+                         INNER JOIN appeal_records r ON ap.appeal_record_id = r.id
+                    WHERE p.org_index = #{item}
+            <if test="endDate != null">
+                AND r.start_date &lt;= #{endDate}
+            </if>
+
+            <if test="startDate != null">
+                AND r.end_date &gt;= #{startDate}
+            </if>
+        </foreach>
+    </select>
+
+    <select id="statByPerson" resultMap="AppealPersonListResDTO">
+        SELECT ar.id                                     AS appeal_record_id,
+               ar.status,
+               p.person_no,
+               p.person_name,
+               p.org_name                                AS class_name,
+               CONCAT(ar.start_date, ' ~ ', ar.end_date) AS attendance_date_range,
+               ar.reported_at
+        FROM appeal_persons ap
+                     INNER JOIN appeal_records ar on ar.id = ap.appeal_record_id
+                     INNER JOIN persons p on p.person_no = ap.person_no
+                WHERE p.org_index = #{orgIndex}
+        <if test="status != null">
+            AND ar.status = #{status}
+        </if>
+        <if test="search != null and search != ''">
+            AND (p.person_name LIKE CONCAT('%', #{search}, '%')
+                    OR
+                 p.person_no LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        ORDER BY ar.reported_at desc
+    </select>
+</mapper>

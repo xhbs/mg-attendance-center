@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.TaskPersonRelationMapper">
+    <resultMap id="TaskPersonBO" type="com.unisinsight.business.bo.TaskPersonBO">
+        <result column="task_id" jdbcType="INTEGER" property="taskId"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+    </resultMap>
+
+    <resultMap id="PersonOfClassBO" type="com.unisinsight.business.bo.PersonOfClassBO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+    </resultMap>
+
+    <resultMap id="PersonListOfClassBO" type="com.unisinsight.business.bo.PersonListOfClassBO">
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="person_name" jdbcType="VARCHAR" property="personName"/>
+        <result column="person_url" jdbcType="VARCHAR" property="personUrl"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+        <result column="task_id" jdbcType="VARCHAR" property="taskId"/>
+        <result column="attendance_date" jdbcType="DATE" property="attendanceDate"/>
+        <result column="result" jdbcType="VARCHAR" property="result"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="taskResultId" jdbcType="VARCHAR" property="taskResultId"/>
+    </resultMap>
+
+    <select id="saveTaskPersons">
+        INSERT INTO task_person_relations (task_id, person_no)
+        SELECT #{taskId}, person_no FROM
+        (
+        SELECT person_no, ROUND(absence_weeks * 100 :: NUMERIC / total) AS absence_rate FROM
+        (
+        SELECT r.person_no,
+        COUNT(*) AS total,
+        COALESCE(SUM(CASE WHEN RESULT = 99 THEN 1 ELSE 0 END), 0)
+        AS absence_weeks
+        FROM daily_attendance_week_results r
+        INNER JOIN persons p on r.person_no = p.person_no
+        WHERE r.attendance_start_date &lt;= #{endDate}
+        AND r.attendance_end_date &gt;= #{startDate}
+        AND r.org_index IN
+        <foreach collection="orgIndexes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND p.at_school = true
+        GROUP BY r.person_no
+        ) T
+        WHERE T.total > 0 ) T
+        WHERE T.absence_rate > #{absenceRate}
+        ON CONFLICT ( task_id, person_no ) DO NOTHING
+    </select>
+
+    <select id="saveTaskPersonsCtr">
+        INSERT INTO task_person_relations (task_id, person_no)
+        SELECT #{taskId}, person_no FROM persons p
+        where p.org_index IN
+        <foreach collection="orgIndexes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="callTheRollFirstTaskId != null">
+            and p.person_no not in (
+                select person_no from task_results where task_id = #{callTheRollFirstTaskId} and result != 99 group by person_no
+            )
+        </if>
+        AND p.at_school = true
+        ON CONFLICT ( task_id, person_no ) DO NOTHING
+    </select>
+
+    <delete id="deleteNotAtSchoolPersons">
+        DELETE
+        FROM task_person_relations
+        WHERE person_no IN (SELECT person_no FROM persons WHERE at_school = false)
+    </delete>
+
+    <select id="findHaveTaskPersons" resultMap="TaskPersonBO">
+        SELECT r.task_id, p.person_no, p.person_name, p.org_index
+        FROM task_attendance_dates d
+        INNER JOIN task_person_relations r ON r.task_id = d.task_id
+        INNER JOIN persons p ON p.person_no = r.person_no
+        WHERE d.attendance_date = #{date}
+        <if test="personNos != null and personNos.size > 0">
+            AND r.person_no IN
+            <foreach collection="personNos" item="personNo" open="(" separator="," close=")">
+                #{personNo}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="findAbsencePersonsAtDate" resultMap="TaskPersonBO">
+        SELECT r.task_id, p.person_no, p.person_name, p.org_index
+        FROM task_attendance_dates d
+                 INNER JOIN task_person_relations r ON r.task_id = d.task_id
+                 INNER JOIN persons p ON p.person_no = r.person_no
+        WHERE d.attendance_date = #{date}
+          AND r.person_no NOT IN (
+            SELECT person_no
+            FROM task_results
+            WHERE attendance_date = #{date}
+              AND result
+            != 99
+            )
+    </select>
+
+    <select id="findPersonsAtDate" resultMap="PersonOfClassBO">
+        SELECT DISTINCT p.person_no, p.person_name, p.org_index
+        FROM task_attendance_dates d
+                 INNER JOIN task_person_relations r ON r.task_id = d.task_id
+                 INNER JOIN persons p ON p.person_no = r.person_no
+        WHERE d.attendance_date = #{date}
+    </select>
+
+    <select id="findPersonsOfSchool" resultType="java.lang.String">
+        SELECT DISTINCT r.person_no
+        FROM task_person_relations r
+                 LEFT JOIN persons p ON p.person_no = r.person_no
+                 LEFT JOIN organizations o ON o.org_index = p.org_index
+        WHERE o.org_parent_index = #{orgIndex}
+    </select>
+
+    <select id="findPersonTask" resultType="java.lang.Integer">
+        SELECT DISTINCT r.task_id
+        FROM task_attendance_dates d
+                 INNER JOIN task_person_relations r ON r.task_id = d.task_id
+        WHERE d.attendance_date = #{date}
+          AND r.person_no = #{personNo}
+    </select>
+
+    <select id="findPersonListByTaskId" resultMap="PersonListOfClassBO">
+        select * from (
+        select p.person_no,
+        p.person_name,
+        p.person_url,
+        p.org_index,
+        p.org_name,
+        r.task_id,
+        dates.attendance_date,
+        tr.id as taskResultId,
+        CASE WHEN tr.result IS NULL THEN 2 ELSE 1 END AS status,
+        case when tr.result is null then 99 else tr.result end as result
+        from public.task_person_relations r
+        inner join public.persons p on r.person_no = p.person_no
+        inner join task_attendance_dates dates on dates.attendance_date = #{req.day} and dates.task_id = r.task_id
+        left join task_results tr on r.task_id = tr.task_id and tr.person_no = p.person_no
+        where
+        r.task_id = #{req.taskId}
+        <if test="req.personNo != null and req.personNo != ''">
+            and p.person_no = #{req.personNo}
+        </if>
+        <if test="req.status != null and req.status == 1">
+            and tr.result is not null
+        </if>
+        <if test="req.status != null and req.status == 2">
+            and tr.result is null
+        </if>
+        <if test="req.result != null">
+            and tr.result = #{req.result}
+        </if>
+        and p.org_index in
+        <foreach collection="orgIndex" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        ) a order by a.status desc,a.person_no
+    </select>
+</mapper>

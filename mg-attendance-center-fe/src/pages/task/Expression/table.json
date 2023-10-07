@@ -1,0 +1,89 @@
+{
+  "rowKey": "id",
+  "hasSerialNo": true,
+  "serialNoOverlying": true,
+  "actions": {
+    "create": {
+      "url": "/api/biz-scene/v1/attendance/express",
+      "method": "post",
+      "transformInput": "transformFormInput"
+    },
+    "retrieve": {
+      "url": "/api/biz-scene/v1/attendance/express/page",
+      "method": "post",
+      "transformInput": "transformRetrieveInput"
+    },
+    "retrieveOne": {
+      "url": ""
+    },
+    "update": {
+      "url": ""
+    },
+    "delete": {
+      "url": "/api/biz-scene/v1/attendance/express/batch",
+      "method": "delete",
+      "transformInput": "transformDeleteInput"
+    }
+  },
+  "handleBarOptions": {
+    "show": true,
+    "handleOptions": {
+      "gutter": 16,
+      "elements": [
+        {
+          "antdProps": {
+            "children": "新建",
+            "icon": "hz-add",
+            "event": "onAdd",
+            "disabled": "addBtnDisabled"
+          }
+        },
+        {
+          "slotType": "builtIn",
+          "component": "delete"
+        }
+      ]
+    }
+  },
+  "searchBarOptions": {
+    "show": false,
+    "conditions": []
+  },
+  "columns": [
+    {
+      "title": "表达结果名称",
+      "type": "normal",
+      "dataIndex": "express_name",
+      "width": "20%",
+      "component": "custom",
+      "slot": "columnRuleNameSlot",
+      "search": true
+    },
+    {
+      "title": "创建时间",
+      "type": "normal",
+      "dataIndex": "create_time",
+      "component": "datetime"
+    },
+    {
+      "title": "创建人",
+      "type": "normal",
+      "dataIndex": "user_name",
+      "component": "ellipsis",
+      "search": true
+    },
+    {
+      "title": "操作",
+      "type": "handler",
+      "dataIndex": "$id",
+      "width": 200,
+      "component": "handler",
+      "handlers": [
+        {
+          "slotType": "builtIn",
+          "component": "delete"
+        }
+      ]
+    }
+  ]
+}

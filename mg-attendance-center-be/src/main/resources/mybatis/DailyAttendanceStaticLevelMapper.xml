@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.DailyAttendanceStaticLevelMapper">
+  <resultMap id="BaseResultMap" type="com.unisinsight.business.model.DailyAttendanceStaticLevelDO">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="id" jdbcType="BIGINT" property="id" />
+    <result column="org_index" jdbcType="VARCHAR" property="orgIndex" />
+    <result column="org_name" jdbcType="VARCHAR" property="orgName" />
+    <result column="sub_type" jdbcType="SMALLINT" property="subType" />
+    <result column="org_parent_index" jdbcType="VARCHAR" property="orgParentIndex" />
+    <result column="school_year" jdbcType="VARCHAR" property="schoolYear" />
+    <result column="school_term" jdbcType="CHAR" property="schoolTerm" />
+    <result column="year_month" jdbcType="VARCHAR" property="yearMonth" />
+    <result column="check_week" jdbcType="SMALLINT" property="checkWeek" />
+    <result column="student_num" jdbcType="INTEGER" property="studentNum" />
+    <result column="regist_student_num" jdbcType="INTEGER" property="registStudentNum" />
+    <result column="range1" jdbcType="INTEGER" property="range1" />
+    <result column="range2" jdbcType="INTEGER" property="range2" />
+    <result column="range3" jdbcType="INTEGER" property="range3" />
+    <result column="range4" jdbcType="INTEGER" property="range4" />
+    <result column="range5" jdbcType="INTEGER" property="range5" />
+    <result column="range6" jdbcType="INTEGER" property="range6" />
+    <result column="range7" jdbcType="INTEGER" property="range7" />
+    <result column="range8" jdbcType="INTEGER" property="range8" />
+  </resultMap>
+
+  <resultMap id="CommonResultMap" extends="BaseResultMap" type="com.unisinsight.business.bo.DailyAttendanceStaticLevelBO">
+  </resultMap>
+
+  <sql id="base_column_list">
+        daily_attendance_static_level.id,
+        daily_attendance_static_level.org_index,
+        daily_attendance_static_level.org_name,
+        daily_attendance_static_level.org_parent_index,
+        daily_attendance_static_level.school_year,
+        daily_attendance_static_level.school_term,
+        daily_attendance_static_level.year_month,
+        daily_attendance_static_level.check_week,
+        daily_attendance_static_level.student_num AS student_num,
+        daily_attendance_static_level.regist_student_num AS regist_student_num,
+        daily_attendance_static_level.range1,
+        daily_attendance_static_level.range2,
+        daily_attendance_static_level.range3,
+        daily_attendance_static_level.range4,
+        daily_attendance_static_level.range5,
+        daily_attendance_static_level.range6,
+        daily_attendance_static_level.range7,
+        daily_attendance_static_level.range8,
+        daily_attendance_static_level.sub_type
+    </sql>
+
+  <sql id="base_filter">
+    <where>
+      <if test="orgIndex != null">
+        AND daily_attendance_static_level.org_index = #{orgIndex}
+      </if>
+      <if test="orgName != null">
+        AND daily_attendance_static_level.org_name like CONCAT('%', #{orgName},'%')
+      </if>
+      <if test="orgParentIndex != null">
+        AND daily_attendance_static_level.org_parent_index = #{orgParentIndex}
+      </if>
+      <if test="subType != null">
+        AND daily_attendance_static_level.sub_type = #{subType}
+      </if>
+      <if test="schoolYear != null">
+        AND daily_attendance_static_level.school_year = #{schoolYear}
+      </if>
+      <if test="schoolTerm != null">
+        AND daily_attendance_static_level.school_term = #{schoolTerm}
+      </if>
+      <if test="yearMonth != null">
+        AND daily_attendance_static_level.year_month = #{yearMonth}
+      </if>
+      <if test="checkWeek != null">
+        AND daily_attendance_static_level.check_week = #{checkWeek}
+      </if>
+      <if test="orgIndexs != null and orgIndexs.size > 0">
+        and daily_attendance_static_level.org_index in
+        <foreach collection="orgIndexs" item="item" separator="," open="(" close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </sql>
+
+  <select id="selectStaticLevelList"  resultMap="CommonResultMap" >
+    select
+    <include refid="base_column_list"/>
+    from daily_attendance_static_level daily_attendance_static_level
+    left join organizations organizations on organizations.org_index = daily_attendance_static_level.org_index
+    <include refid="base_filter"/>
+    order by organizations.display_order asc
+  </select>
+
+
+  <select id="selectTotal"  resultType="Integer" >
+    select
+     count(*)
+    from daily_attendance_static_level daily_attendance_static_level
+    <where>
+      <if test="orgIndex != null">
+        AND daily_attendance_static_level.org_index = #{orgIndex}
+      </if>
+      <if test="orgName != null">
+        AND daily_attendance_static_level.org_name like CONCAT('%', #{orgName},'%')
+      </if>
+      <if test="orgParentIndex != null">
+        AND daily_attendance_static_level.org_parent_index = #{orgParentIndex}
+      </if>
+      <if test="schoolYear != null">
+        AND daily_attendance_static_level.school_year = #{schoolYear}
+      </if>
+      <if test="schoolTerm != null">
+        AND daily_attendance_static_level.school_term = #{schoolTerm}
+      </if>
+      <if test="yearMonth != null">
+        AND daily_attendance_static_level.year_month = #{yearMonth}
+      </if>
+    </where>
+  </select>
+
+  <select id="selectStaticLevelListByHandle"  resultMap="CommonResultMap" >
+    select
+    <include refid="base_column_list"/>
+    from daily_attendance_static_level daily_attendance_static_level
+    left join organizations organizations on organizations.org_index = daily_attendance_static_level.org_index
+    <where>
+      <if test="orgIndex != null">
+        AND daily_attendance_static_level.org_index = #{orgIndex}
+      </if>
+      <if test="orgName != null">
+        AND daily_attendance_static_level.org_name like CONCAT('%', #{orgName},'%')
+      </if>
+      <if test="orgParentIndex != null">
+        AND daily_attendance_static_level.org_parent_index = #{orgParentIndex}
+      </if>
+      <if test="schoolYear != null">
+        AND daily_attendance_static_level.school_year = #{schoolYear}
+      </if>
+      <if test="schoolTerm != null">
+        AND daily_attendance_static_level.school_term = #{schoolTerm}
+      </if>
+      <if test="yearMonth != null">
+        AND daily_attendance_static_level.year_month = #{yearMonth}
+      </if>
+    </where>
+    order by organizations.display_order asc
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="checkWeekExist"  resultType="Integer"  >
+    select  1
+    from daily_attendance_static_level
+    <where>
+      <if test="schoolYear != null">
+        AND school_year = #{schoolYear}
+      </if>
+      <if test="schoolTerm != null">
+        AND school_term = #{schoolTerm}
+      </if>
+      <if test="checkWeek != null">
+        AND check_week = #{checkWeek}
+      </if>
+    </where>
+    limit 1
+  </select>
+
+  <update id="batchUpdate">
+    <foreach collection="results" item="item" separator=";">
+      UPDATE "daily_attendance_static_level"
+      SET
+      regist_student_num = #{item.registStudentNum},
+      student_num = #{item.studentNum},
+      check_week = #{item.checkWeek},
+      range1 = #{item.range1},
+      range2 = #{item.range2},
+      range3 = #{item.range3},
+      range4 = #{item.range4},
+      range5 = #{item.range5},
+      range6 = #{item.range6},
+      range7 = #{item.range7},
+      range8 = #{item.range8}
+      WHERE id = #{item.id}
+    </foreach>
+  </update>
+
+  <select id="getMaxYearMonth"  resultType="String"  >
+    select  max(year_month)
+    from daily_attendance_static_level
+    where
+     school_year = #{schoolYear}
+     AND school_term = #{schoolTerm}
+  </select>
+
+</mapper>

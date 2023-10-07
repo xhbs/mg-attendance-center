@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.SubsidMatchStaticStuMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.SubsidMatchStaticStuDO">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="person_no" jdbcType="VARCHAR" property="personNo"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_parent_index" jdbcType="VARCHAR" property="orgParentIndex"/>
+        <result column="normal_num" jdbcType="INTEGER" property="normalNum"/>
+        <result column="absent_num" jdbcType="INTEGER" property="absentNum"/>
+        <result column="subsid_rule_id" jdbcType="INTEGER" property="subsidRuleId"/>
+        <result column="absent_rate" jdbcType="INTEGER" property="absentRate"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+    <insert id="generateSubsidStuAttendanceResults">
+        insert into subsid_match_static_stu(person_no, normal_num, absent_num, absent_rate, subsid_rule_id, status, org_index,
+                                            org_parent_index,create_time)
+        select temp.person_no,
+               normal_num,
+               absent_num,
+               absent_rate,
+               #{subsidRuleId}                                 subsid_rule_id,
+               case when (absent_rate >= 50) then 0 else 1 end status,
+               org.org_index,
+               org.org_parent_index,
+               now()                                           create_time
+        from (
+                 select s.person_no,
+                        sum(case when (result_of_monday != 99 and result_of_monday is not null) then 1 else 0 end +
+                            case when (result_of_tuesday != 99 and result_of_tuesday is not null) then 1 else 0 end +
+                            case
+                                when (result_of_wednesday != 99 and result_of_wednesday is not null) then 1
+                                else 0 end +
+                            case when (result_of_thursday != 99 and result_of_thursday is not null) then 1 else 0 end +
+                            case when (result_of_friday != 99 and result_of_friday is not null) then 1 else 0 end
+                            )                                   normal_num,
+                        sum(case when (result_of_monday = 99 or result_of_monday is null) then 1 else 0 end +
+                            case when (result_of_tuesday = 99 or result_of_tuesday is null) then 1 else 0 end +
+                            case when (result_of_wednesday = 99 or result_of_wednesday is null) then 1 else 0 end +
+                            case when (result_of_thursday = 99 or result_of_thursday is null) then 1 else 0 end +
+                            case when (result_of_friday = 99 or result_of_friday is null) then 1 else 0 end
+                            )                                   absent_num,
+                        round(sum(case when (result_of_monday = 99 or result_of_monday is null) then 1 else 0 end +
+                                  case when (result_of_tuesday = 99 or result_of_tuesday is null) then 1 else 0 end +
+                                  case
+                                      when (result_of_wednesday = 99 or result_of_wednesday is null) then 1
+                                      else 0 end +
+                                  case when (result_of_thursday = 99 or result_of_thursday is null) then 1 else 0 end +
+                                  case when (result_of_friday = 99 or result_of_friday is null) then 1 else 0 end
+                                  ) / sum(5)::numeric, 2) * 100 absent_rate
+                 from subsid_stu_list s
+                          left join daily_attendance_week_results d on s.person_no = d.person_no
+                 where s.sub_list_index = #{subListIndex}
+                   and d.attendance_start_date between #{chkDateSt} and #{chkDateEd}
+                 group by s.person_no
+             ) as temp
+                 inner join persons person on temp.person_no = person.person_no
+                 inner join organizations org on person.org_index = org.org_index
+        order by normal_num desc;
+
+    </insert>
+
+    <select id="selectCountStuRecords" resultType="com.unisinsight.business.dto.SubdisLevelResultCountDTO">
+        select
+        org_index as orgIndex,
+        sum(case status when '1' then 1 else 0 end ) as matchPassNum,
+        sum(case status when '0' then 1 else 0 end ) as matchNoPassNum
+        from subsid_match_static_stu
+        <where>
+            <if test="subsidRuleId != null">
+                subsid_rule_id = #{subsidRuleId}
+            </if>
+            <if test="orgIndexList != null and orgIndexList.size > 0">
+                and org_index in
+                <foreach collection="orgIndexList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by org_index
+    </select>
+
+
+    <select id="selectSubsidStaticStuList"
+            resultType="com.unisinsight.business.dto.response.SubsidMatchStaticStuResDTO">
+        select
+        stu.id as id,
+        stu.status as status,
+        stu.person_no as personNo,
+        p.person_name as personName,
+        p.person_url as personPic,
+        stu.org_index as orgIndex,
+        org.org_name as orgName,
+        stu.org_parent_index as orgParentIndex,
+        orgParent.org_name as orgParentName,
+        stu.normal_num as normalNum,
+        stu.absent_num as absentNum,
+        stu.subsid_rule_id as subsidRuleId,
+        stu.absent_rate as absentRate
+        from subsid_match_static_stu stu
+        left join persons p on p.person_no = stu.person_no
+        left join organizations org on stu.org_index = org.org_index
+        left join organizations orgParent on stu.org_parent_index = orgParent.org_index
+        <where>
+            <if test="id != null">
+                stu.id = #{id}
+            </if>
+            <if test="subsidRuleId != null">
+                stu.subsid_rule_id = #{subsidRuleId}
+            </if>
+            <if test="orgIndex != null">
+                and stu.org_index = #{orgIndex}
+            </if>
+            <if test="orgParentIndex != null">
+                and stu.org_parent_index = #{orgParentIndex}
+            </if>
+            <if test="status != null">
+                and stu.status = #{status}
+            </if>
+            <if test="searchKey != null">
+                and ( p.person_name like CONCAT('%',#{searchKey},'%')
+                or stu.person_no like CONCAT('%',#{searchKey},'%')
+                or org.org_name like CONCAT('%',#{searchKey},'%'))
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

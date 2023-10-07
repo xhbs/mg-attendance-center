@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.OrganizationMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.OrganizationDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="org_name" jdbcType="VARCHAR" property="orgName"/>
+        <result column="index_path" jdbcType="VARCHAR" property="indexPath"/>
+        <result column="index_path_name" jdbcType="VARCHAR" property="indexPathName"/>
+        <result column="org_parent_index" jdbcType="VARCHAR" property="orgParentIndex"/>
+        <result column="device_org_index" jdbcType="VARCHAR" property="deviceOrgIndex"/>
+        <result column="sub_type" jdbcType="SMALLINT" property="subType"/>
+    </resultMap>
+
+    <resultMap id="ChannelOfSchoolBO" type="com.unisinsight.business.bo.ChannelOfSchoolBO">
+        <result column="channel_id" jdbcType="VARCHAR" property="channelId"/>
+        <result column="user_org_index" jdbcType="VARCHAR" property="userOrgIndex"/>
+    </resultMap>
+
+    <resultMap id="UserClassMappingBO" type="com.unisinsight.business.bo.UserClassMappingBO">
+        <result column="org_index" jdbcType="VARCHAR" property="orgIndex"/>
+        <result column="user_name" jdbcType="VARCHAR" property="userName"/>
+        <result column="cell_phone" jdbcType="VARCHAR" property="cellPhone"/>
+    </resultMap>
+
+    <select id="sync">
+        CREATE extension IF NOT EXISTS dblink;
+        <!-- 同步 -->
+        INSERT INTO organizations (id, org_index, org_name, index_path, org_parent_index, sub_type, display_order,
+        is_virtual)
+        SELECT *
+        FROM dblink('hostaddr=${host} port=${port} dbname=infra user=${username} password=${password}',
+        'SELECT org_id,org_index,org_name,index_path,org_parent_index,sub_type,display_order,
+        CASE is_virtual WHEN 1 THEN TRUE ELSE FALSE END AS is_virtual
+        FROM uuv."organization" WHERE deleted = 0')
+        AS T (id int4,
+        org_index VARCHAR,
+        org_name VARCHAR,
+        index_path VARCHAR,
+        org_parent_index VARCHAR,
+        sub_type INT,
+        display_order float4,
+        is_virtual BOOL)
+        ON CONFLICT ( id ) DO UPDATE
+        SET org_index = excluded.org_index,
+        org_name = excluded.org_name,
+        index_path = excluded.index_path,
+        org_parent_index = excluded.org_parent_index,
+        sub_type = excluded.sub_type,
+        display_order = excluded.display_order,
+        is_virtual = excluded.is_virtual;
+        <!-- 更新组织名称 -->
+        UPDATE organizations AS t1
+        SET index_path_name = (
+        SELECT STRING_AGG(org_name, '&lt;' ORDER BY id DESC)
+        FROM organizations
+        WHERE org_index IN (
+        SELECT UNNEST(STRING_TO_ARRAY(index_path, '/'))
+        FROM organizations
+        WHERE id = t1.id)
+        AND org_name != '紫光华智');
+    </select>
+
+    <select id="findAllChannels" resultMap="ChannelOfSchoolBO">
+        CREATE
+        extension IF NOT EXISTS dblink;
+        SELECT *
+        FROM dblink('hostaddr=${host} port=${port} dbname=infra user=${username} password=${password}',
+                    'SELECT channel.ape_id, org.org_index
+                        FROM
+                            udm.channel channel
+                            LEFT JOIN udm.device device ON device.ape_id = channel.owner_aps_id
+                            LEFT JOIN uuv.ynzz_unis_org yno ON yno.unis_org_index = device.org_index
+                            LEFT JOIN uuv.organization org ON org.org_index = yno.ynzz_org_id
+                        WHERE
+                            org.sub_type = 4
+                            AND org.deleted = 0
+                            AND channel.deleted = 0
+                            AND device.deleted =0')
+                 AS T (channel_id VARCHAR,
+                       user_org_index VARCHAR
+                )
+    </select>
+
+    <select id="getMappingUser" resultMap="UserClassMappingBO">
+        CREATE
+        extension IF NOT EXISTS dblink;
+        SELECT *
+        FROM dblink('hostaddr=${host} port=${port} dbname=infra user=${username} password=${password}',
+                    'SELECT
+                        o.org_index,
+                        u.user_name,
+                        u.user_code
+                    FROM
+                        uuv.user_class_mapping m
+                        INNER JOIN uuv.organization o ON m.org_id = o.org_id and o.deleted = 0
+                        INNER JOIN uuv.user_info u ON m.user_id = u.user_id and u.deleted = 0
+                    WHERE
+                        o.org_index IN (${orgIndexes})')
+                 AS T (org_index VARCHAR,
+                       user_name VARCHAR,
+                       cell_phone VARCHAR
+                )
+    </select>
+
+    <insert id="batchSave">
+        <foreach collection="organizations" item="item" separator=",">
+            INSERT INTO organizations
+            (id, org_index, org_name, index_path, index_path_name, org_parent_index, sub_type, display_order,
+            is_virtual)
+            VALUES (#{item.id},
+            #{item.orgIndex},
+            #{item.orgName},
+            #{item.indexPath},
+            #{item.indexPathName},
+            #{item.orgParentIndex},
+            #{item.subType},
+            #{item.displayOrder},
+            #{item.isVirtual})
+            ON CONFLICT (id) DO UPDATE
+            SET org_index = #{item.orgIndex},
+            org_name = #{item.orgName},
+            index_path = #{item.indexPath},
+            org_parent_index = #{item.orgParentIndex},
+            sub_type = #{item.subType},
+            display_order = #{item.displayOrder},
+            is_virtual = #{item.isVirtual};
+        </foreach>
+
+        UPDATE organizations AS t1
+        SET index_path_name = (
+        SELECT string_agg(org_name, '&lt;' ORDER BY id DESC)
+        FROM organizations
+        WHERE org_index IN (
+        SELECT UNNEST(string_to_array(index_path, '/'))
+        FROM organizations
+        WHERE id = t1.id)
+        AND org_name != '紫光华智')
+        WHERE id IN
+        <foreach collection="organizations" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </insert>
+
+    <insert id="batchUpdate">
+        <foreach collection="organizations" item="item" separator=";">
+            UPDATE organizations
+            SET org_index = #{item.orgIndex},
+            org_name = #{item.orgName},
+            index_path = #{item.indexPath},
+            org_parent_index = #{item.orgParentIndex},
+            sub_type = #{item.subType},
+            is_virtual = #{item.isVirtual},
+            index_path_name = (
+            SELECT string_agg(org_name, '&lt;' ORDER BY id DESC)
+            FROM organizations
+            WHERE org_index IN (
+            SELECT UNNEST(string_to_array(index_path, '/'))
+            FROM organizations
+            WHERE id = #{item.id}))
+            WHERE id = #{item.id};
+        </foreach>
+    </insert>
+
+    <select id="selectByOrgIndex" resultMap="BaseResultMap">
+        SELECT *
+        FROM organizations
+        WHERE org_index = #{orgIndex} LIMIT 1
+    </select>
+
+    <select id="selectIndexPath" resultType="java.lang.String">
+        SELECT index_path
+        FROM organizations
+        WHERE org_index = #{orgIndex} LIMIT 1
+    </select>
+
+    <select id="selectSuperior" resultMap="BaseResultMap">
+        WITH RECURSIVE r AS (
+            SELECT *
+            FROM organizations
+            WHERE org_index = #{orgIndex}
+            UNION ALL
+            SELECT t.*
+            FROM organizations t,
+                 r
+            WHERE t.org_index = r.org_parent_index
+        )
+        SELECT *
+        FROM r
+        WHERE sub_type = #{subType} LIMIT 1
+    </select>
+
+    <select id="selectLowerOrgIndex" resultType="java.lang.String">
+        WITH RECURSIVE r AS (
+        SELECT *
+        FROM organizations
+        WHERE org_index IN
+        <foreach collection="orgIndexes" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        UNION ALL
+        SELECT t.*
+        FROM organizations t,
+        r
+        WHERE t.org_parent_index = r.org_index
+        )
+        SELECT org_index
+        FROM r
+        WHERE sub_type = #{subType}
+    </select>
+
+    <select id="selectLowerOrgs" resultMap="BaseResultMap">
+        WITH RECURSIVE r AS (
+            SELECT *
+            FROM organizations
+            WHERE org_index = #{orgIndex}
+            UNION ALL
+            SELECT t.*
+            FROM organizations t,
+                 r
+            WHERE t.org_parent_index = r.org_index
+        )
+        SELECT *
+        FROM r
+        WHERE sub_type = #{subType}
+    </select>
+
+
+    <select id="selectLowerOrgsLimit" resultMap="BaseResultMap">
+        WITH RECURSIVE r AS (
+            SELECT *
+            FROM organizations
+            WHERE org_index = #{orgIndex}
+            UNION ALL
+            SELECT t.*
+            FROM organizations t,
+                 r
+            WHERE t.org_parent_index = r.org_index
+        )
+        SELECT *
+        FROM r
+        WHERE sub_type = #{subType} LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+
+    <select id="selectOrganizationsBatch" resultMap="BaseResultMap">
+        SELECT org_index, org_name, index_path, index_path_name, org_parent_index, sub_type
+        FROM organizations
+        <where>
+            <if test="subType != null">
+                AND sub_type = #{subType}
+            </if>
+        </where>
+        ORDER BY id
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="getChildren" resultMap="BaseResultMap">
+        SELECT *
+        FROM organizations
+        WHERE org_parent_index = #{orgIndex}
+        <if test="search != null and search != ''">
+            AND org_name LIKE CONCAT('%', #{search}, '%')
+        </if>
+        ORDER BY display_order
+    </select>
+
+    <select id="getChildrenByParent" resultType="com.unisinsight.business.model.OrganizationDO">
+        SELECT *
+        FROM organizations
+        WHERE org_parent_index = #{parent}
+    </select>
+
+    <select id="getChildrenByParents" resultType="com.unisinsight.business.model.OrganizationDO">
+        SELECT *
+        FROM organizations
+        WHERE org_parent_index in
+        <foreach collection="parents" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getSuperiorOfSchool" resultMap="BaseResultMap">
+        WITH RECURSIVE r AS (
+            SELECT *
+            FROM organizations
+            WHERE org_index = #{orgIndex}
+            UNION ALL
+            SELECT t.*
+            FROM organizations t,
+                 r
+            WHERE t.org_index = r.org_parent_index
+        )
+        SELECT *
+        FROM r
+        WHERE r.is_virtual = false
+          AND r.sub_type &lt; 4
+        ORDER BY r.sub_type desc LIMIT 1
+    </select>
+
+    <select id="allSchoolCount" resultType="integer">
+        select count(1)
+        from organizations
+        where sub_type = #{subType}
+    </select>
+
+    <select id="provinceSchoolCount" resultType="integer">
+        select count(1)
+        from organizations
+        where org_parent_index = #{provinceId}
+    </select>
+
+    <select id="selectBySubType" resultType="com.unisinsight.business.model.OrganizationDO">
+        select org_index, org_name, org_parent_index, sub_type
+        from organizations
+        where sub_type = #{subType}
+    </select>
+
+    <select id="selectOrgIndexAndName" resultType="com.unisinsight.business.model.OrganizationDO">
+        select org_index, org_name, org_parent_index, sub_type
+        from organizations
+        where 4 >= sub_type
+    </select>
+
+    <update id="stateBatchUpdate">
+        update organizations set zt = #{state}, xjzt = #{state} where org_index in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

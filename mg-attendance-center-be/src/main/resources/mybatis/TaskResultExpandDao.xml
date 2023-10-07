@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.TaskResultExpandDao">
+
+    <resultMap type="com.unisinsight.business.model.TaskResultExpand" id="TaskResultExpandMap">
+        <result property="taskResultId" column="task_result_id" jdbcType="INTEGER"/>
+        <result property="matchResult" column="match_result" jdbcType="INTEGER"/>
+        <result property="location" column="location" jdbcType="VARCHAR"/>
+        <result property="placeName" column="place_name" jdbcType="VARCHAR"/>
+        <result property="picture" column="picture" jdbcType="VARCHAR"/>
+        <result property="absenceReason" column="absence_reason" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+    </resultMap>
+</mapper>
+

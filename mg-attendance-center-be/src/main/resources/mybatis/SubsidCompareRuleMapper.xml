@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.SubsidCompareRuleMapper">
+    <resultMap id="BaseResultMap" type="com.unisinsight.business.model.SubsidCompareRuleDO">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="sub_list_index" jdbcType="VARCHAR" property="subListIndex"/>
+        <result column="absent_rate" jdbcType="INTEGER" property="absentRate"/>
+        <result column="org_index" jdbcType="DATE" property="orgIndex"/>
+        <result column="subsid_type" jdbcType="SMALLINT" property="subsidType"/>
+        <result column="chk_date_st" jdbcType="DATE" property="chkDateSt"/>
+        <result column="chk_date_ed" jdbcType="DATE" property="chkDateEd"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="rule" jdbcType="TIMESTAMP" property="rule"/>
+    </resultMap>
+    <sql id="base_sql">
+        id
+        ,sub_list_index,absent_rate,chk_date_st,chk_date_ed,org_index,subsid_type,create_time,rule
+    </sql>
+
+    <insert id="insertSubsidCompareRule" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.unisinsight.business.model.SubsidCompareRuleDO">
+        insert into subsid_compare_rule(sub_list_index, absent_rate, chk_date_st, chk_date_ed, org_index, subsid_type,
+                                        call_the_roll_absent_rate, rule, school_term, school_year)
+        values (#{subListIndex}, #{absentRate}, #{chkDateSt}, #{chkDateEd}, #{orgIndex}, #{subsidType},
+                #{callTheRollAbsentRate}, #{rule}, #{schoolTerm}, #{schoolYear})
+    </insert>
+
+    <select id="selectSubsidCompareRuleList" resultMap="BaseResultMap">
+        select
+        <include refid="base_sql"/>
+        from
+        subsid_compare_rule
+        <where>
+            1=1
+            <if test="id != null ">
+                and id = #{id}
+            </if>
+            <if test="rule != null ">
+                and rule = #{rule}
+            </if>
+            <if test="absentRate != null ">
+                and sub_list_index = #{subListIndex}
+            </if>
+            <if test="absentRate != null ">
+                and absent_rate = #{absentRate}
+            </if>
+            <if test="orgIndex != null">
+                and org_index = #{orgIndex}
+            </if>
+            <if test="subsidType != null ">
+                and subsid_type = #{subsidType}
+            </if>
+            <if test="chkDateSt != null ">
+                and chk_date_st = #{chkDateSt}
+            </if>
+            <if test="chkDateEd != null ">
+                and chk_date_ed = #{chkDateEd}
+            </if>
+            <if test="createTimeSt != null ">
+                and create_time >= #{createTimeSt}
+            </if>
+            <if test="createTimeEd != null ">
+                and create_time &lt;= #{createTimeEd}
+            </if>
+            <if test="orgIndexs != null and orgIndexs.size > 0">
+                and org_index in
+                <foreach collection="orgIndexs" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.unisinsight.business.mapper.SubsidStuAttendanceResultsMapper">
+  <resultMap id="BaseResultMap" type="com.unisinsight.business.model.SubsidStuAttendanceResultsDO">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="id" jdbcType="BIGINT" property="id" />
+    <result column="result" jdbcType="SMALLINT" property="result" />
+    <result column="person_no" jdbcType="VARCHAR" property="personNo" />
+    <result column="person_name" jdbcType="VARCHAR" property="personName" />
+    <result column="org_index" jdbcType="VARCHAR" property="orgIndex" />
+    <result column="attendance_type" jdbcType="SMALLINT" property="attendanceType" />
+    <result column="task_name" jdbcType="VARCHAR" property="taskName" />
+    <result column="attendance_start_date" jdbcType="DATE" property="attendanceStartDate" />
+    <result column="attendance_end_date" jdbcType="DATE" property="attendanceEndDate" />
+    <result column="result_of_monday" jdbcType="SMALLINT" property="resultOfMonday" />
+    <result column="result_of_tuesday" jdbcType="SMALLINT" property="resultOfTuesday" />
+    <result column="result_of_wednesday" jdbcType="SMALLINT" property="resultOfWednesday" />
+    <result column="result_of_thursday" jdbcType="SMALLINT" property="resultOfThursday" />
+    <result column="result_of_friday" jdbcType="SMALLINT" property="resultOfFriday" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="subsid_rule_id" jdbcType="INTEGER" property="subsidRuleId" />
+  </resultMap>
+
+
+  <select id="findSubsidStuResultList" resultType="com.unisinsight.business.dto.SubdisStuResultCountDTO">
+    SELECT
+    person_no as personNo ,
+    sum(case result when 99 then 0 else 1 end )as normalNum,
+    sum(case result when 99 then 1 else 0 end )as absentNum
+    FROM subsid_stu_attendance_results
+    <where>
+      <if test="subsidRuleId != null  ">
+        subsid_rule_id = #{subsidRuleId}
+      </if>
+      <if test="personNoList != null and personNoList.size > 0">
+        and person_no in
+        <foreach collection="personNoList" item="item" separator="," open="(" close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+    group by person_no
+  </select>
+
+</mapper>
